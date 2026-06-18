@@ -1,7 +1,7 @@
 import pandas as pd
 
 def load_data(path:str):
-    return pd.read_csv(path)
+    return pd.read_csv(path, parse_dates=["date"])
 
 
 def split_by_data(df, split_date):

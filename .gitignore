@@ -1,2 +1,5 @@
 data/raw
 data/processed
+mlflow.db
+venv
+*/__pycache__
