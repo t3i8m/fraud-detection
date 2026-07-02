@@ -1,5 +1,7 @@
-data/raw
+data/*
 data/processed
 mlflow.db
 venv
 */__pycache__
+mlruns/
+catboost_info/
