@@ -4,21 +4,26 @@ import seaborn as sns
 import os
 import numpy as np
 import pandas as pd
-from config import COLS_TO_DROP
+from config import CATEGORIC_COLS_OFFLINE, CATEGORIC_COLS_ONLINE, COLS_TO_DROP_OFFLINE, COLS_TO_DROP_ONLINE, NUMERIC_COLS_OFFLINE, NUMERIC_COLS_ONLINE
 from src.pipeline import build_pipeline
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.metrics import average_precision_score, roc_auc_score, precision_score,precision_recall_curve, recall_score, f1_score
 from tqdm import tqdm
 
 
-def train_timeseries_cv(df, model, experiment_type = "", experiment_name="", threshold=0.5):
+def train_timeseries_cv(df, model, experiment_type = "", experiment_name="", online=True, threshold=0.5, model_params={}):
 
     tscv = TimeSeriesSplit(n_splits=5)
     df = df.sort_values("date").reset_index(drop=True)
+
     X = df.drop(columns=["target"])
     y = (df["target"]=="Yes").astype(int)
 
-    pipeline = build_pipeline(model_type=model, cols_to_drop=COLS_TO_DROP)
+    if online:
+        pipeline = build_pipeline(model_type=model, numeric_cols=NUMERIC_COLS_ONLINE, categoric_cols=CATEGORIC_COLS_ONLINE, cols_to_drop=COLS_TO_DROP_ONLINE, model_params=model_params)
+    else:
+        pipeline = build_pipeline(model_type=model,numeric_cols=NUMERIC_COLS_OFFLINE, categoric_cols=CATEGORIC_COLS_OFFLINE, cols_to_drop=COLS_TO_DROP_OFFLINE, model_params=model_params)
+
 
     mlflow.set_experiment(f"{experiment_type}_fraud_detection_ts_cv")
     with mlflow.start_run(run_name=f"{model}_cv_{experiment_name}_threshold_{threshold}"):
@@ -73,7 +78,6 @@ def train_timeseries_cv(df, model, experiment_type = "", experiment_name="", thr
             mlflow.log_metric(f"fold_{index}_recall", recall)
             mlflow.log_metric(f"fold_{index}_precision", precision)
             mlflow.log_metric(f"fold_{index}_f1", f1)
-            mlflow.sklearn.log_model(pipeline, name="model", serialization_format="cloudpickle")
 
         # since we were using TimeSeriesSplit we do not have preds for the first fold
         valid_idx = ~np.isnan(oof_preds)
@@ -106,6 +110,7 @@ def train_timeseries_cv(df, model, experiment_type = "", experiment_name="", thr
         mlflow.log_metric("global_oof_precision", global_precision)
         mlflow.log_metric("global_oof_f1", global_f1)
         mlflow.log_param("decision_threshold", threshold)
+        mlflow.sklearn.log_model(pipeline, name="model", serialization_format="cloudpickle")
 
 
         log_pr_curve(y_true_valid, oof_preds_valid, global_pr_auc)
