@@ -27,7 +27,16 @@ def build_pipeline(model_type:Literal["lgbm", "xgboost", "rf", "lr", "catboost"]
     if model_type=='lgbm':
         model = LGBMClassifier(verbose=-1, max_depth=3,num_leaves=7,learning_rate=0.05,n_estimators=150,subsample=0.8,colsample_bytree=0.8,reg_lambda=10.0, random_state=RANDOM_STATE, **model_params)
     elif model_type=='xgboost':
-        model = XGBClassifier( max_depth=4, learning_rate=0.05, n_estimators=300, subsample=0.8,colsample_bytree=0.8,reg_lambda=10.0, random_state=RANDOM_STATE, **model_params)
+        model_params.setdefault("max_depth", 4)
+        model_params.setdefault("learning_rate", 0.05)
+        model_params.setdefault("n_estimators", 300)
+        model_params.setdefault("subsample", 0.8)
+        model_params.setdefault("colsample_bytree", 0.8)
+        model_params.setdefault("reg_lambda", 10.0)
+        model_params.setdefault("reg_alpha", 5.0)
+        model_params.setdefault("min_child_weight", 10)
+        model_params.setdefault("gamma", 1.0)
+        model = XGBClassifier(random_state=RANDOM_STATE, **model_params)
     elif model_type=="rf":
         model = RandomForestClassifier(max_depth=6, min_samples_leaf=20, n_estimators=100, class_weight="balanced_subsample", n_jobs=-1, random_state=RANDOM_STATE,**model_params)
     elif model_type=="catboost":

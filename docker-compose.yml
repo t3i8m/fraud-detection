@@ -1,0 +1,27 @@
+services:
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8050:8000"
+    depends_on:
+      - mlflow
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v3.14.0
+    ports:
+      - "5050:5000"
+    environment:
+      - MLFLOW_SERVER_ALLOWED_HOSTS=mlflow:5000,localhost:5050,127.0.0.1:5050
+    volumes:
+      - ./mlflow.db:/mlflow/mlflow.db
+      - ./mlruns:/mlflow/mlruns
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --backend-store-uri sqlite:///mlflow/mlflow.db
+      --default-artifact-root mlflow-artifacts:/
+      --artifacts-destination /mlflow/mlruns
+      --serve-artifacts

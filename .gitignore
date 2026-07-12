@@ -5,3 +5,4 @@ venv
 */__pycache__
 mlruns/
 catboost_info/
+tune_studies.db

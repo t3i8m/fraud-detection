@@ -1,0 +1,16 @@
+venv
+.venv
+__pycache__
+*.pyc
+.git
+.gitignore
+data
+notebooks
+mlruns
+catboost_info
+mlflow.db
+tune_studies.db
+models
+configs
+.claude
+*.md

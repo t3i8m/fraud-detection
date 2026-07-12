@@ -7,18 +7,19 @@ from sklearn.base import BaseEstimator, TransformerMixin
 
 class FeatureTransformer(BaseEstimator, TransformerMixin):
 
-    def __init__(self, columns_to_drop=None):
+    def __init__(self, columns_to_drop=None, encoder_smoothing=2000):
         super().__init__()
         self.columns_to_drop_ = columns_to_drop if columns_to_drop is not None else []
+        self.encoder_smoothing = encoder_smoothing
 
 
     def fit(self, X, y,):
         X = X.copy()
         X["merchant_id"] = X["merchant_id"].astype(str)
 
-        self._mcc_encoder = CatBoostEncoder(cols=['mcc'], a=10)
-        self._merchant_encoder = CatBoostEncoder(cols=['merchant_id'], a=10)
-        self._merchant_state_encoder = CatBoostEncoder(cols=['merchant_state'], a=10)
+        self._mcc_encoder = CatBoostEncoder(cols=['mcc'], a=self.encoder_smoothing)
+        self._merchant_encoder = CatBoostEncoder(cols=['merchant_id'], a=self.encoder_smoothing)
+        self._merchant_state_encoder = CatBoostEncoder(cols=['merchant_state'], a=self.encoder_smoothing)
 
         self._mcc_encoder.fit(X["mcc"], y)
         self._merchant_encoder.fit(X["merchant_id"], y)

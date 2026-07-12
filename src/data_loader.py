@@ -6,6 +6,8 @@ import numpy as np
 def extract_features(df):
     df = df.copy()
 
+    df["amount"] = df["amount"].astype(str).str.replace("$", "", regex=False).astype(float)
+
     df = df.sort_values("date").reset_index(drop=True)
 
     df["temp_is_online"] = df["use_chip"].str.lower().str.contains("online", na=False).astype(int)
@@ -32,13 +34,13 @@ def extract_features(df):
 
     if "target" in df.columns:
         df["temp_numeric_target"] = (df["target"].astype(str).str.lower().str.strip() == "yes").astype(int)
-        df["prev_fraud_count"] = (df.groupby("card_id")["temp_numeric_target"].transform(lambda x: x.rolling("30D").sum() - x).fillna(0).astype(int))
+        df["prev_fraud_count_30days"] = (df.groupby("card_id")["temp_numeric_target"].transform(lambda x: x.rolling("30D").sum() - x).fillna(0).astype(int))
         df = df.drop(columns=["temp_numeric_target"])
 
-    df["has_bad_cvv"] = df["errors"].str.contains("cvv", na=False).astype(int)
-    df["has_bad_pin"] = df["errors"].str.contains("pin", na=False).astype(int)
-    df["has_insufficient_balance"] = df["errors"].str.contains("balance", na=False).astype(int)
-    df["has_technical_glitch"] = df["errors"].str.contains("glitch", na=False).astype(int)
+    df["has_bad_cvv"] = df["errors"].str.contains("cvv", case=False, na=False).astype(int)
+    df["has_bad_pin"] = df["errors"].str.contains("pin", case=False, na=False).astype(int)
+    df["has_insufficient_balance"] = df["errors"].str.contains("balance", case=False, na=False).astype(int)
+    df["has_technical_glitch"] = df["errors"].str.contains("glitch", case=False, na=False).astype(int)
 
     df["insufficient_balance_count_1h"] = (df.groupby("card_id")["has_insufficient_balance"].transform(lambda x: x.rolling("1h").sum() - x).fillna(0))
     df["bad_cvv_count_1h"] = (df.groupby("card_id")["has_bad_cvv"].transform(lambda x: x.rolling("1h").sum() - x).fillna(0))
@@ -121,8 +123,7 @@ def undersampling_df(df, target_ratio=0.01):
     return df_balanced
 
 
-def load_data(path: str, online_trx = False, users_path:str=None,cards_path:str=None, undersampling = False, subset: int = None):
-    df = pd.read_csv(path, parse_dates=["date"])
+def load_data(df, online_trx = False, users_path:str=None,cards_path:str=None, undersampling = False, subset: int = None):
     df = extract_features(df)
 
     if online_trx:
@@ -143,7 +144,14 @@ def load_data(path: str, online_trx = False, users_path:str=None,cards_path:str=
     elif undersampling:
         df = undersampling_df(df)
 
-    return df
+    if online_trx:
+        train_df = df[df['date'].dt.year.between(2010, 2015)]
+        test_df = df[df['date'].dt.year == 2016]
+    else:
+        train_df = df[df['date'].dt.year == 2018]
+        test_df = df[df['date'].dt.year == 2019]
+
+    return train_df, test_df
 
 
 

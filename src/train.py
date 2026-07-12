@@ -11,13 +11,62 @@ from sklearn.metrics import average_precision_score, roc_auc_score, precision_sc
 from tqdm import tqdm
 
 
+
+def train_full(df_train, df_test, model, experiment_type = "", experiment_name="", online=True, threshold=0.5, model_params={}):
+    df_train = df_train.sort_values("date").reset_index(drop=True)
+    df_test = df_test.sort_values("date").reset_index(drop=True)
+
+    X = df_train.drop(columns=["target"])
+    y = (df_train["target"]=="Yes").astype(int)
+
+    X_test = df_test.drop(columns=["target"])
+    y_test = (df_test["target"]=="Yes").astype(int)
+
+    if online:
+        pipeline = build_pipeline(model_type=model, numeric_cols=NUMERIC_COLS_ONLINE, categoric_cols=CATEGORIC_COLS_ONLINE, cols_to_drop=COLS_TO_DROP_ONLINE, model_params=model_params)
+    else:
+        pipeline = build_pipeline(model_type=model,numeric_cols=NUMERIC_COLS_OFFLINE, categoric_cols=CATEGORIC_COLS_OFFLINE, cols_to_drop=COLS_TO_DROP_OFFLINE, model_params=model_params)
+
+
+    mlflow.set_experiment(f"{experiment_type}_fraud_detection_full")
+    with mlflow.start_run(run_name=f"{model}_full_{experiment_name}_threshold_{threshold}"):
+        pipeline.fit(X, y)
+
+        y_hat = pipeline.predict_proba(X_test)[:, 1]
+        test_auc = roc_auc_score(y_test, y_hat)
+        test_pr_auc = average_precision_score(y_test, y_hat)
+
+        mlflow.log_metric(f"test_auc", test_auc)
+        mlflow.log_metric(f"test_pr_auc", test_pr_auc)
+
+        # take probs for positive class
+        binary_preds = (y_hat >= threshold).astype(int)
+
+        recall = recall_score(y_test, binary_preds, zero_division=0)
+        precision = precision_score(y_test, binary_preds, zero_division=0)
+        f1 = f1_score(y_test, binary_preds, zero_division=0)
+
+        mlflow.log_metric(f"test_recall", recall)
+        mlflow.log_metric(f"test_precision", precision)
+        mlflow.log_metric(f"test_f1", f1)
+
+        mlflow.sklearn.log_model(pipeline, name="model", serialization_format="cloudpickle")
+        log_pr_curve(y_test, y_hat, test_pr_auc)
+        get_feature_importances(pipeline, X, y, model_type=model)
+
+    return y_test, y_hat
+
+
+
 def train_timeseries_cv(df, model, experiment_type = "", experiment_name="", online=True, threshold=0.5, model_params={}):
 
-    tscv = TimeSeriesSplit(n_splits=5)
     df = df.sort_values("date").reset_index(drop=True)
 
     X = df.drop(columns=["target"])
     y = (df["target"]=="Yes").astype(int)
+
+    test_size = len(X) // 7
+    tscv = TimeSeriesSplit(n_splits=5, test_size=test_size)
 
     if online:
         pipeline = build_pipeline(model_type=model, numeric_cols=NUMERIC_COLS_ONLINE, categoric_cols=CATEGORIC_COLS_ONLINE, cols_to_drop=COLS_TO_DROP_ONLINE, model_params=model_params)
@@ -47,6 +96,8 @@ def train_timeseries_cv(df, model, experiment_type = "", experiment_name="", onl
 
             #  take probs for trining
             train_preds = pipeline.predict_proba(train_X)[:, 1]
+            preds = pipeline.predict_proba(test_X)[:, 1]
+
             train_auc = roc_auc_score(train_y, train_preds)
             train_pr_auc = average_precision_score(train_y, train_preds)
             fold_train_auc_scores.append(train_auc)
@@ -56,28 +107,29 @@ def train_timeseries_cv(df, model, experiment_type = "", experiment_name="", onl
             mlflow.log_metric(f"fold_{index}_train_pr_auc", train_pr_auc)
 
             # take probs for positive class
-            preds = pipeline.predict_proba(test_X)[:, 1]
             binary_preds = (preds >= threshold).astype(int)
 
             oof_preds[val_id] = preds
 
-            auc = roc_auc_score(test_y, preds)
-            pr_auc = average_precision_score(test_y, preds)
             recall = recall_score(test_y, binary_preds, zero_division=0)
             precision = precision_score(test_y, binary_preds, zero_division=0)
             f1 = f1_score(test_y, binary_preds, zero_division=0)
 
-            fold_auc_scores.append(auc)
-            fold_pr_auc_scores.append(pr_auc)
             fold_recall_scores.append(recall)
             fold_precision_scores.append(precision)
             fold_f1_scores.append(f1)
 
-            mlflow.log_metric(f"fold_{index}_auc", auc)
-            mlflow.log_metric(f"fold_{index}_pr_auc", pr_auc)
             mlflow.log_metric(f"fold_{index}_recall", recall)
             mlflow.log_metric(f"fold_{index}_precision", precision)
             mlflow.log_metric(f"fold_{index}_f1", f1)
+
+            if test_y.sum() > 0:
+                auc = roc_auc_score(test_y, preds)
+                pr_auc = average_precision_score(test_y, preds)
+                fold_auc_scores.append(auc)
+                fold_pr_auc_scores.append(pr_auc)
+                mlflow.log_metric(f"fold_{index}_auc", auc)
+                mlflow.log_metric(f"fold_{index}_pr_auc", pr_auc)
 
         # since we were using TimeSeriesSplit we do not have preds for the first fold
         valid_idx = ~np.isnan(oof_preds)
@@ -116,7 +168,6 @@ def train_timeseries_cv(df, model, experiment_type = "", experiment_name="", onl
         log_pr_curve(y_true_valid, oof_preds_valid, global_pr_auc)
         get_feature_importances(pipeline, X, y, model_type=model)
 
-    
     return y_true_valid, oof_preds_valid
 
 
