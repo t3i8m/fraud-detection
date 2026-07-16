@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Literal, Optional
 from pydantic import BaseModel
+from risk_enum import RISK_LEVEL
 
 
 class Transaction(BaseModel):
@@ -16,3 +17,8 @@ class Transaction(BaseModel):
     zip: Optional[str] = None
     mcc: int
     errors: Optional[str] = None
+
+
+class TransactionPredicted(Transaction):
+    fraud_probability: float
+    risk_level: RISK_LEVEL

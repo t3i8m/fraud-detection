@@ -1,8 +1,10 @@
 from contextlib import asynccontextmanager
+import os
 from fastapi import FastAPI
 import mlflow.pyfunc
 import uvicorn
 from api.routers import model_router
+import asyncpg
 
 mlflow.set_tracking_uri("http://mlflow:5000")
 
@@ -10,7 +12,10 @@ mlflow.set_tracking_uri("http://mlflow:5000")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     app.state.model = mlflow.pyfunc.load_model("models:/fraud-online-xgb@champion")
+    app.state.db_connection = await asyncpg.create_pool(host=os.environ["POSTGRES_HOST"],port=os.environ["POSTGRES_PORT"],user=os.environ["POSTGRES_USER"],password=os.environ["POSTGRES_PASSWORD"],database=os.environ["POSTGRES_DB"],)
     yield
+
+    await app.state.db_pool.close()
 
 
 app = FastAPI(lifespan=lifespan)

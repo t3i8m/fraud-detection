@@ -6,3 +6,4 @@ venv
 mlruns/
 catboost_info/
 tune_studies.db
+.env
