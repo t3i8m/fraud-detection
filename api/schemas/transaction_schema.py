@@ -22,6 +22,7 @@ class Transaction(BaseModel):
 class TransactionPredicted(Transaction):
     fraud_probability: float
     risk_level: RISK_LEVEL
+    binary_prediction: str
     time_since_last_trx: float
     online_history_ratio: float
     is_new_merchant: int

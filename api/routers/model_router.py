@@ -1,10 +1,12 @@
+import logging
 from fastapi import APIRouter, Request
 import pandas as pd
-from api.config import HIGH_RISK_THRESHOLD, LOW_RISK_THRESHOLD
-from api.db.repository import get_realtime_features, update_redis_cache, save_transaction
+from api.config import DECISION_THRESHOLD, HIGH_RISK_THRESHOLD, LOW_RISK_THRESHOLD
+from api.db.repository import get_realtime_features, update_redis_cache, save_transaction, insert_transaction
 from api.schemas.risk_enum import RISK_LEVEL
 from api.schemas.transaction_schema import Transaction, TransactionPredicted
 
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -23,6 +25,8 @@ async def predict_fraud(request: Request,transaction:Transaction):
     redis_connection = request.app.state.redis_connection
     db_connection = request.app.state.db_connection
 
+    logger.info(f"Received a new transaction with id: {transaction.id}")
+
     # transaction to dataframe
     df = pd.DataFrame([transaction.model_dump()])
     df["date"] = pd.to_datetime(df["date"])
@@ -33,11 +37,18 @@ async def predict_fraud(request: Request,transaction:Transaction):
     for key, value in realtime_features.items():
         df[key] = value
 
-    prediction = float(model.predict_proba(df)[:, 1][0]) # make a predictiom
-    trx_predicted = TransactionPredicted(**transaction.model_dump(),fraud_probability=prediction,risk_level=get_risk_level(prediction),**realtime_features,)
+    logger.info(f"Classifying... {transaction.id}")
 
-    # save trnsaction to the db
+    prediction = float(model.predict_proba(df)[:, 1][0]) # make a prediction
+    binary_prediction = "reject" if prediction > DECISION_THRESHOLD else "approved"
+    risk_level = get_risk_level(prediction)
+    trx_predicted = TransactionPredicted(**transaction.model_dump(),fraud_probability=prediction,risk_level=risk_level,binary_prediction=binary_prediction,**realtime_features,)
+    logger.info(f"Transaction {transaction.id} classified as {binary_prediction} (probability={prediction:.4f}, risk_level={risk_level.value})")
+
+    # save transaction as usual, then its prediction
+    await insert_transaction(transaction, db_connection)
     await save_transaction(trx_predicted, db_connection)
+
     update_status = await update_redis_cache(transaction, redis_connection)
 
     return {'result':prediction, 'cache_updated':update_status}

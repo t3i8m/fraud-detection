@@ -24,9 +24,13 @@ async def get_users_data_batch(postgre_pool):
         count(t.amount) AS trx_count,
         sum(t.amount) AS amount_sum,
         sum(t.amount * t.amount) AS amount_sumsq
-    FROM transactions t, latest_ts
+    FROM transactions t
+    LEFT JOIN predictions p ON p.id = t.id, latest_ts
     WHERE t.use_chip = 'Online Transaction'
-        AND t.status = 'approved'
+        AND (
+            (t.status = 'approved' AND (p.id IS NULL OR p.binary_prediction = 'approved'))
+            OR (t.status = 'pending' AND p.binary_prediction = 'approved' AND t.target = 'No')
+        )
         AND t.date <= latest_ts.ts - interval '14 days'
     GROUP BY t.client_id
     """

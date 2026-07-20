@@ -2,11 +2,31 @@ import logging
 from datetime import datetime
 from asyncpg import Pool
 from redis.asyncio import Redis
+from api.schemas.risk_enum import REVIEW_STATUS
 from api.schemas.transaction_schema import Transaction, TransactionPredicted
 
 logger = logging.getLogger(__name__)
 CACHE_EXPIRATION = 60 * 60 * 24 * 90
 WINDOW_1H_SECONDS = 60 * 60
+
+
+async def insert_transaction(trx:Transaction, db_connection:Pool):
+    try:
+        insert_query = """
+        INSERT INTO transactions(id, date, client_id, card_id, amount, use_chip, merchant_id, merchant_city, merchant_state, zip, mcc, errors)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        """
+
+        await db_connection.execute(
+            insert_query,
+            trx.id, trx.date, trx.client_id, trx.card_id, trx.amount, trx.use_chip,
+            trx.merchant_id, trx.merchant_city, trx.merchant_state, trx.zip, trx.mcc, trx.errors,
+        )
+        return True
+    except Exception as ex:
+        logger.exception(f"Failed to insert transaction, reason: {ex}")
+        return False
+
 
 async def save_transaction(trx:TransactionPredicted, db_connection:Pool):
     try:
@@ -15,8 +35,8 @@ async def save_transaction(trx:TransactionPredicted, db_connection:Pool):
             id, fraud_probability, risk_level,
             time_since_last_trx, online_history_ratio, is_new_merchant, is_new_mcc, user_amount_z_score,
             trx_count_1h, trx_amount_1h, has_bad_pin, has_insufficient_balance, has_technical_glitch,
-            bad_pin_count_1h, bad_cvv_count_1h, insufficient_balance_count_1h, tech_glitch_count_1h
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+            bad_pin_count_1h, bad_cvv_count_1h, insufficient_balance_count_1h, tech_glitch_count_1h, binary_prediction
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
         """
 
         await db_connection.execute(
@@ -24,11 +44,21 @@ async def save_transaction(trx:TransactionPredicted, db_connection:Pool):
             trx.id, trx.fraud_probability, trx.risk_level.value,
             trx.time_since_last_trx, trx.online_history_ratio, trx.is_new_merchant, trx.is_new_mcc, trx.user_amount_z_score,
             trx.trx_count_1h, trx.trx_amount_1h, trx.has_bad_pin, trx.has_insufficient_balance, trx.has_technical_glitch,
-            trx.bad_pin_count_1h, trx.bad_cvv_count_1h, trx.insufficient_balance_count_1h, trx.tech_glitch_count_1h,
+            trx.bad_pin_count_1h, trx.bad_cvv_count_1h, trx.insufficient_balance_count_1h, trx.tech_glitch_count_1h, trx.binary_prediction,
         )
         return True
     except Exception as ex:
         logger.exception(f"Failed to write in postgre, reason: {ex}")
+        return False
+
+
+async def update_transaction_status(trx_id:int, status:REVIEW_STATUS, db_connection:Pool):
+    try:
+        update_query = "UPDATE transactions SET status = $1 WHERE id = $2"
+        await db_connection.execute(update_query, status.value, trx_id)
+        return True
+    except Exception as ex:
+        logger.exception(f"Failed to update transaction status, reason: {ex}")
         return False
 
 

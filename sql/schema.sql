@@ -67,7 +67,8 @@ CREATE TABLE predictions (
     bad_pin_count_1h INTEGER,
     bad_cvv_count_1h INTEGER,
     insufficient_balance_count_1h INTEGER,
-    tech_glitch_count_1h INTEGER
+    tech_glitch_count_1h INTEGER,
+    binary_prediction TEXT
 );
 
 CREATE TABLE holdout_transactions (

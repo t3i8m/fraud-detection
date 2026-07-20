@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import logging
 import os
 from fastapi import FastAPI
 import mlflow.sklearn
@@ -7,6 +8,7 @@ from api.routers import model_router
 import asyncpg
 import redis.asyncio as aioredis
 
+logging.basicConfig(level=logging.INFO)
 mlflow.set_tracking_uri("http://mlflow:5000")
 
 
