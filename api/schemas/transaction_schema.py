@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Literal, Optional
 from pydantic import BaseModel
-from risk_enum import RISK_LEVEL
+from api.schemas.risk_enum import RISK_LEVEL
 
 
 class Transaction(BaseModel):

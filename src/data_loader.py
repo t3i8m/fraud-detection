@@ -1,3 +1,4 @@
+from collections import defaultdict, deque
 import pandas as pd
 import pgeocode
 import numpy as np
@@ -50,6 +51,81 @@ def extract_features(df):
     df = df.reset_index()
     
     df = df.drop(columns=["temp_is_online", "temp_prev_online_count", "temp_total_prev_count"])
+    return df
+
+
+def add_lagged_client_features(df, channel_mask, lag_days=14):
+    df = df.copy()
+    fraud_flags = (df["target"].astype(str).str.lower().str.strip() == "yes").values if "target" in df.columns else np.zeros(len(df), dtype=bool)
+
+    dates = df["date"].values
+    client_ids = df["client_id"].values
+    mccs = df["mcc"].values
+    merchants = df["merchant_id"].values
+    amounts = df["amount"].values
+
+    lag = np.timedelta64(lag_days, "D")
+
+    pending_mcc = defaultdict(deque)
+    pending_merchant = defaultdict(deque)
+    pending_amount = defaultdict(deque)
+    seen_mcc = defaultdict(set)
+    seen_merchant = defaultdict(set)
+    running_sum = {}
+    running_sumsq = {}
+    running_count = {}
+
+    is_new_mcc = df["is_new_mcc"].values.copy()
+    is_new_merchant = df["is_new_merchant"].values.copy()
+    z = df["user_amount_z_score"].values.copy()
+
+    for i in range(len(df)):
+        if not channel_mask[i]:
+            continue
+
+        c = client_ids[i]
+        t = dates[i]
+        cutoff = t - lag
+
+        q = pending_mcc[c]
+        while q and q[0][0] <= cutoff:
+            _, mcc_val, fraud_flag = q.popleft()
+            if not fraud_flag:
+                seen_mcc[c].add(mcc_val)
+
+        q = pending_merchant[c]
+        while q and q[0][0] <= cutoff:
+            _, merch_val, fraud_flag = q.popleft()
+            if not fraud_flag:
+                seen_merchant[c].add(merch_val)
+
+        q = pending_amount[c]
+        while q and q[0][0] <= cutoff:
+            _, amt_val, fraud_flag = q.popleft()
+            if not fraud_flag:
+                running_sum[c] = running_sum.get(c, 0.0) + amt_val
+                running_sumsq[c] = running_sumsq.get(c, 0.0) + amt_val ** 2
+                running_count[c] = running_count.get(c, 0) + 1
+
+        is_new_mcc[i] = 0 if mccs[i] in seen_mcc[c] else 1
+        is_new_merchant[i] = 0 if merchants[i] in seen_merchant[c] else 1
+
+        n = running_count.get(c, 0)
+        if n == 0:
+            mean, std = 0.0, 1.0
+        else:
+            mean = running_sum[c] / n
+            var = running_sumsq[c] / n - mean ** 2
+            std = var ** 0.5 if var > 0 else 1.0
+        z[i] = (amounts[i] - mean) / (std if std != 0 else 1.0)
+
+        pending_mcc[c].append((t, mccs[i], fraud_flags[i]))
+        pending_merchant[c].append((t, merchants[i], fraud_flags[i]))
+        pending_amount[c].append((t, amounts[i], fraud_flags[i]))
+
+    df["is_new_mcc"] = is_new_mcc
+    df["is_new_merchant"] = is_new_merchant
+    df["user_amount_z_score"] = z
     return df
 
 
@@ -128,6 +204,7 @@ def load_data(df, online_trx = False, users_path:str=None,cards_path:str=None, u
 
     if online_trx:
         condition = (df["use_chip"]=="Online Transaction")
+        df = add_lagged_client_features(df, condition.values, lag_days=14)
     else:
         users_data = pd.read_csv(users_path).rename(columns={"id":"client_id"})
         cards_data = pd.read_csv(cards_path).rename(columns={"id":"card_id"}).drop(columns=["client_id"])

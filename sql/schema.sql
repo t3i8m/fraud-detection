@@ -31,6 +31,8 @@ CREATE TABLE cards (
     card_on_dark_web TEXT
 );
 
+CREATE TYPE review_status AS ENUM ('approved', 'pending', 'reject');
+
 CREATE TABLE transactions (
     id BIGINT PRIMARY KEY,
     date TIMESTAMP NOT NULL,
@@ -44,7 +46,8 @@ CREATE TABLE transactions (
     zip TEXT,
     mcc INTEGER NOT NULL,
     errors TEXT,
-    target TEXT
+    target TEXT,
+    status review_status NOT NULL DEFAULT 'pending'
 );
 
 CREATE TABLE predictions (

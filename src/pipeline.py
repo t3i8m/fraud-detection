@@ -47,3 +47,19 @@ def build_pipeline(model_type:Literal["lgbm", "xgboost", "rf", "lr", "catboost"]
     return Pipeline([("feature_engineering", FeatureTransformer(columns_to_drop=cols_to_drop)), ("rare_categories", RareCategoryGrouper(cat_columns=categoric_cols)), ("preprocessor", preprocessor), ("classifier", model)])
 
 
+def compute_feature_weights(pipeline, X, y, low_weight_map, default_weight=1.0):
+    pipeline[:-1].fit_transform(X, y)
+    feature_names = pipeline[:-1].get_feature_names_out()
+
+    weights = []
+    for name in feature_names:
+        matched = default_weight
+        for key, weight in low_weight_map.items():
+            if name.endswith(key):
+                matched = weight
+                break
+        weights.append(matched)
+
+    return weights
+
+

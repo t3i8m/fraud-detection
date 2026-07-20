@@ -5,14 +5,14 @@ import os
 import numpy as np
 import pandas as pd
 from config import CATEGORIC_COLS_OFFLINE, CATEGORIC_COLS_ONLINE, COLS_TO_DROP_OFFLINE, COLS_TO_DROP_ONLINE, NUMERIC_COLS_OFFLINE, NUMERIC_COLS_ONLINE
-from src.pipeline import build_pipeline
+from src.pipeline import build_pipeline, compute_feature_weights
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.metrics import average_precision_score, roc_auc_score, precision_score,precision_recall_curve, recall_score, f1_score
 from tqdm import tqdm
 
 
 
-def train_full(df_train, df_test, model, experiment_type = "", experiment_name="", online=True, threshold=0.5, model_params={}):
+def train_full(df_train, df_test, model, experiment_type = "", experiment_name="", online=True, threshold=0.5, model_params={}, feature_weight_map=None):
     df_train = df_train.sort_values("date").reset_index(drop=True)
     df_test = df_test.sort_values("date").reset_index(drop=True)
 
@@ -27,10 +27,14 @@ def train_full(df_train, df_test, model, experiment_type = "", experiment_name="
     else:
         pipeline = build_pipeline(model_type=model,numeric_cols=NUMERIC_COLS_OFFLINE, categoric_cols=CATEGORIC_COLS_OFFLINE, cols_to_drop=COLS_TO_DROP_OFFLINE, model_params=model_params)
 
+    fit_params = {}
+    if feature_weight_map:
+        weights = compute_feature_weights(pipeline, X, y, feature_weight_map)
+        fit_params["classifier__feature_weights"] = weights
 
     mlflow.set_experiment(f"{experiment_type}_fraud_detection_full")
     with mlflow.start_run(run_name=f"{model}_full_{experiment_name}_threshold_{threshold}"):
-        pipeline.fit(X, y)
+        pipeline.fit(X, y, **fit_params)
 
         y_hat = pipeline.predict_proba(X_test)[:, 1]
         test_auc = roc_auc_score(y_test, y_hat)
@@ -52,13 +56,13 @@ def train_full(df_train, df_test, model, experiment_type = "", experiment_name="
 
         mlflow.sklearn.log_model(pipeline, name="model", serialization_format="cloudpickle")
         log_pr_curve(y_test, y_hat, test_pr_auc)
-        get_feature_importances(pipeline, X, y, model_type=model)
+        get_feature_importances(pipeline, X, y, model_type=model, fit_params=fit_params)
 
     return y_test, y_hat
 
 
 
-def train_timeseries_cv(df, model, experiment_type = "", experiment_name="", online=True, threshold=0.5, model_params={}):
+def train_timeseries_cv(df, model, experiment_type = "", experiment_name="", online=True, threshold=0.5, model_params={}, feature_weight_map=None):
 
     df = df.sort_values("date").reset_index(drop=True)
 
@@ -73,6 +77,10 @@ def train_timeseries_cv(df, model, experiment_type = "", experiment_name="", onl
     else:
         pipeline = build_pipeline(model_type=model,numeric_cols=NUMERIC_COLS_OFFLINE, categoric_cols=CATEGORIC_COLS_OFFLINE, cols_to_drop=COLS_TO_DROP_OFFLINE, model_params=model_params)
 
+    fit_params = {}
+    if feature_weight_map:
+        weights = compute_feature_weights(pipeline, X, y, feature_weight_map)
+        fit_params["classifier__feature_weights"] = weights
 
     mlflow.set_experiment(f"{experiment_type}_fraud_detection_ts_cv")
     with mlflow.start_run(run_name=f"{model}_cv_{experiment_name}_threshold_{threshold}"):
@@ -92,7 +100,7 @@ def train_timeseries_cv(df, model, experiment_type = "", experiment_name="", onl
             train_X, train_y = X.iloc[train_id], y[train_id]
             test_X, test_y = X.iloc[val_id], y[val_id]
 
-            pipeline.fit(train_X, train_y)
+            pipeline.fit(train_X, train_y, **fit_params)
 
             #  take probs for trining
             train_preds = pipeline.predict_proba(train_X)[:, 1]
@@ -166,14 +174,14 @@ def train_timeseries_cv(df, model, experiment_type = "", experiment_name="", onl
 
 
         log_pr_curve(y_true_valid, oof_preds_valid, global_pr_auc)
-        get_feature_importances(pipeline, X, y, model_type=model)
+        get_feature_importances(pipeline, X, y, model_type=model, fit_params=fit_params)
 
     return y_true_valid, oof_preds_valid
 
 
-def get_feature_importances(pipeline, X, y, model_type):
+def get_feature_importances(pipeline, X, y, model_type, fit_params={}):
 
-    pipeline.fit(X, y)
+    pipeline.fit(X, y, **fit_params)
     model_instance = pipeline.named_steps["classifier"]
     
     if hasattr(model_instance, "feature_importances_"):
