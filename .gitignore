@@ -7,3 +7,4 @@ mlruns/
 catboost_info/
 tune_studies.db
 .env
+__pycache__

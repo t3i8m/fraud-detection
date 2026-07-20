@@ -14,7 +14,7 @@ def main():
     final_testing = False
     exp_type = "ONLINE" if online_trx else "PHYSICAL"
     thr = THRESHOLD_ONLINE if online_trx else THRESHOLD_PHYSICAL
-    experiment_name = f"{exp_type}_channelisolated_lag14d_bestparams_colsamplereg_noismcc"
+    experiment_name = f"{exp_type}_channelisolated_lag14d_bestparams_colsamplereg"
 
     mode_params = {'max_depth': 6, 'learning_rate': 0.030531371755859415, 'n_estimators': 165, 'subsample': 0.5007308604665407, 'colsample_bytree': 0.4, 'colsample_bylevel': 0.5, 'colsample_bynode': 0.5, 'reg_lambda': 75.13881509487554, 'reg_alpha': 0.7558212888334405, 'min_child_weight': 41, 'gamma': 2.5331823743196136, 'scale_pos_weight': 81.98084102260175}
     feature_weight_map = None
@@ -44,7 +44,8 @@ def main():
 
     df["predicted_prob"] = y_hat
 
-    save_data(df, f"data/predicted/predicted_{model}_{experiment_name}.csv")
+    mode_suffix = "full" if final_testing else "cv"
+    save_data(df, f"data/predicted/predicted_{model}_{experiment_name}_{mode_suffix}.csv")
     print("Done")
     return
     

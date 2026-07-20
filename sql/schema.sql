@@ -53,7 +53,21 @@ CREATE TABLE transactions (
 CREATE TABLE predictions (
     id BIGINT PRIMARY KEY REFERENCES transactions(id),
     fraud_probability NUMERIC(12,2),
-    risk_level TEXT
+    risk_level TEXT,
+    time_since_last_trx NUMERIC,
+    online_history_ratio NUMERIC,
+    is_new_merchant SMALLINT,
+    is_new_mcc SMALLINT,
+    user_amount_z_score NUMERIC,
+    trx_count_1h INTEGER,
+    trx_amount_1h NUMERIC,
+    has_bad_pin SMALLINT,
+    has_insufficient_balance SMALLINT,
+    has_technical_glitch SMALLINT,
+    bad_pin_count_1h INTEGER,
+    bad_cvv_count_1h INTEGER,
+    insufficient_balance_count_1h INTEGER,
+    tech_glitch_count_1h INTEGER
 );
 
 CREATE TABLE holdout_transactions (
