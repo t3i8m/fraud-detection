@@ -1,7 +1,7 @@
 services:
 
   api:
-    image: ghcr.io/t3i8m/fraud-api:v1.0.0
+    image: ghcr.io/t3i8m/fraud-api:${APP_VERSION:-v1.0.0}
     ports:
       - "8050:8000"
     environment:
@@ -37,6 +37,8 @@ services:
 
   postgres:
     image: postgres:16-alpine
+    ports:
+      - "127.0.0.1:5432:5432"
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -48,12 +50,14 @@ services:
 
   redis:
     image: redis:7-alpine
+    ports:
+      - "127.0.0.1:6379:6379"
     command:
       redis-server --requirepass ${REDIS_PASSWORD}
     restart: unless-stopped
 
   sync_worker:
-    image: ghcr.io/t3i8m/fraud-sync-worker:v1.0.0
+    image: ghcr.io/t3i8m/fraud-sync-worker:${APP_VERSION:-v1.0.0}
     environment:
       - POSTGRES_HOST=${POSTGRES_HOST}
       - POSTGRES_PORT=${POSTGRES_PORT}
@@ -69,7 +73,7 @@ services:
     restart: unless-stopped
 
   simulator:
-    image: ghcr.io/t3i8m/fraud-simulator:v1.0.0
+    image: ghcr.io/t3i8m/fraud-simulator:${APP_VERSION:-v1.0.0}
     environment:
       - POSTGRES_HOST=${POSTGRES_HOST}
       - POSTGRES_PORT=${POSTGRES_PORT}
@@ -86,7 +90,7 @@ services:
     restart: unless-stopped
 
   frontend:
-    image: ghcr.io/t3i8m/fraud-frontend:v1.0.0
+    image: ghcr.io/t3i8m/fraud-frontend:${APP_VERSION:-v1.0.0}
     ports:
       - "8060:8000"
     depends_on:
