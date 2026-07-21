@@ -13,3 +13,4 @@ tune_studies.db
 configs
 .claude
 *.md
+.env
