@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 import logging
 import os
+import cloudpickle
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import mlflow.sklearn
@@ -10,12 +11,26 @@ import asyncpg
 import redis.asyncio as aioredis
 
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 mlflow.set_tracking_uri("http://mlflow:5000")
+
+FALLBACK_MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "models", "final_model.pkl")
+
+
+def load_model():
+    try:
+        model = mlflow.sklearn.load_model("models:/fraud-online-xgb@champion")
+        logger.info("Loaded model from MLflow registry (fraud-online-xgb@champion)")
+        return model
+    except Exception:
+        logger.exception("Could not load model from MLflow, falling back to local models/final_model.pkl")
+        with open(FALLBACK_MODEL_PATH, "rb") as f:
+            return cloudpickle.load(f)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.model = mlflow.sklearn.load_model("models:/fraud-online-xgb@champion")
+    app.state.model = load_model()
     app.state.db_connection = await asyncpg.create_pool(host=os.environ["POSTGRES_HOST"],port=os.environ["POSTGRES_PORT"],user=os.environ["POSTGRES_USER"],password=os.environ["POSTGRES_PASSWORD"],database=os.environ["POSTGRES_DB"],)
     app.state.redis_connection = aioredis.Redis(host=os.environ["REDIS_HOST"], port=os.environ["REDIS_PORT"], password=os.environ["REDIS_PASSWORD"], decode_responses=True)
     yield

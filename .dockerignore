@@ -10,7 +10,6 @@ mlruns
 catboost_info
 mlflow.db
 tune_studies.db
-models
 configs
 .claude
 *.md
