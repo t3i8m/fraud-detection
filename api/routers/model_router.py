@@ -51,6 +51,12 @@ async def predict_fraud(request: Request,transaction:Transaction):
 
     update_status = await update_redis_cache(transaction, redis_connection)
 
-    return {'result':prediction, 'cache_updated':update_status}
+    return {
+        'result': prediction,
+        'risk_level': risk_level.value,
+        'binary_prediction': binary_prediction,
+        'cache_updated': update_status,
+        **realtime_features,
+    }
 
 

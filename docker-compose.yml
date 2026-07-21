@@ -90,6 +90,16 @@ services:
     depends_on:
       - postgres
       - redis
+      - frontend
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - "8060:8000"
+    depends_on:
       - api
     restart: unless-stopped
 

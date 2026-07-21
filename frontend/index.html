@@ -1,0 +1,2018 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTMiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzU4NTBFQyIgc3Ryb2tlLXdpZHRoPSIxLjgiLz48Y2lyY2xlIGN4PSIxNiIgY3k9IjE2IiByPSI4IiBmaWxsPSJub25lIiBzdHJva2U9IiM1ODUwRUMiIHN0cm9rZS13aWR0aD0iMS40IiBvcGFjaXR5PSIwLjU1Ii8+PHBhdGggZD0iTTE2IDE2IEwxNiAzIEExMyAxMyAwIDAgMSAyNy4zIDkuNSBaIiBmaWxsPSIjNTg1MEVDIiBvcGFjaXR5PSIwLjM1Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMi40IiBmaWxsPSIjNTg1MEVDIi8+PGNpcmNsZSBjeD0iMjEuNiIgY3k9IjguOSIgcj0iMS41IiBmaWxsPSIjNTg1MEVDIi8+PC9zdmc+" />
+<title>Online Anti-Fraud Realtime System</title>
+<style>
+  :root {
+    --paper: #F5F6FB;
+    --paper-glow: #ECEBFC;
+    --surface: #FFFFFF;
+    --surface-alt: #F8F8FC;
+    --ink: #1A1F36;
+    --ink-soft: #6B7280;
+    --border: #E3E5EF;
+    --accent: #5850EC;
+    --accent-2: #0EA5A0;
+    --risk-low: #0A8554;
+    --risk-low-bg: #E3FCEF;
+    --risk-medium: #B44D0A;
+    --risk-medium-bg: #FFF1E0;
+    --risk-high: #DF1B41;
+    --risk-high-bg: #FFE6EA;
+    --chip-bg: #EEF0F6;
+    --chip-ink: #8A90A6;
+
+    --font-main: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #10131F;
+      --paper-glow: #1A1735;
+      --surface: #171D2C;
+      --surface-alt: #141928;
+      --ink: #E8EBF3;
+      --ink-soft: #8992A9;
+      --border: #2A3245;
+      --accent: #8C86FF;
+      --accent-2: #33D6CE;
+      --risk-low: #3FCE8E;
+      --risk-low-bg: #113228;
+      --risk-medium: #F0A05C;
+      --risk-medium-bg: #3A2712;
+      --risk-high: #FF6B84;
+      --risk-high-bg: #3A1620;
+      --chip-bg: #232A3C;
+      --chip-ink: #7B8299;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #10131F;
+    --paper-glow: #1A1735;
+    --surface: #171D2C;
+    --surface-alt: #141928;
+    --ink: #E8EBF3;
+    --ink-soft: #8992A9;
+    --border: #2A3245;
+    --accent: #8C86FF;
+    --accent-2: #33D6CE;
+    --risk-low: #3FCE8E;
+    --risk-low-bg: #113228;
+    --risk-medium: #F0A05C;
+    --risk-medium-bg: #3A2712;
+    --risk-high: #FF6B84;
+    --risk-high-bg: #3A1620;
+    --chip-bg: #232A3C;
+    --chip-ink: #7B8299;
+  }
+
+  :root[data-theme="light"] {
+    --paper: #F5F6FB;
+    --paper-glow: #ECEBFC;
+    --surface: #FFFFFF;
+    --surface-alt: #F8F8FC;
+    --ink: #1A1F36;
+    --ink-soft: #6B7280;
+    --border: #E3E5EF;
+    --accent: #5850EC;
+    --accent-2: #0EA5A0;
+    --risk-low: #0A8554;
+    --risk-low-bg: #E3FCEF;
+    --risk-medium: #B44D0A;
+    --risk-medium-bg: #FFF1E0;
+    --risk-high: #DF1B41;
+    --risk-high-bg: #FFE6EA;
+    --chip-bg: #EEF0F6;
+    --chip-ink: #8A90A6;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    padding-top: 64px;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-main);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  /* -- nav -- */
+  .site-nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 64px;
+    z-index: 40;
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-inner {
+    max-width: 1300px;
+    height: 100%;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    text-decoration: none;
+    color: var(--ink);
+    font-weight: 700;
+    font-size: 0.98rem;
+    letter-spacing: -0.01em;
+  }
+
+  .logo-mark {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+  }
+
+  .logo-sweep {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: radar-sweep 4s linear infinite;
+  }
+
+  @keyframes radar-sweep {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .logo-sweep { animation: none; }
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 1.9rem;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .nav-links a {
+    text-decoration: none;
+    color: var(--ink-soft);
+    font-size: 0.86rem;
+    font-weight: 600;
+    transition: color 0.2s ease;
+  }
+
+  .nav-links a:hover { color: var(--ink); }
+
+  .theme-toggle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+
+  .theme-toggle:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .theme-toggle svg {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 780px) {
+    .nav-links { display: none; }
+  }
+
+  /* -- hero -- */
+  .hero-section {
+    min-height: calc(100vh - 64px);
+    background: radial-gradient(ellipse 900px 500px at 15% -10%, var(--paper-glow), var(--paper) 65%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+    scroll-margin-top: 64px;
+  }
+
+  .hero-grid {
+    flex: 1;
+    width: 100%;
+    max-width: 1300px;
+    display: grid;
+    grid-template-columns: 0.85fr 1.3fr;
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem 1.5rem;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.9rem;
+  }
+
+  .live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--risk-low);
+    display: inline-block;
+    animation: pulse-dot 1s ease-in-out infinite;
+  }
+
+  h1 {
+    font-weight: 700;
+    font-size: clamp(1.9rem, 3.4vw, 2.6rem);
+    letter-spacing: -0.02em;
+    line-height: 1.08;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  h1 .accent-word { color: var(--accent); }
+
+  .subtitle {
+    margin: 0.9rem 0 0;
+    max-width: 30rem;
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+
+  .hero-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1.4rem;
+  }
+
+  .hero-badge {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+    background: var(--chip-bg);
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px;
+  }
+
+  .hero-demo {
+    position: relative;
+    height: min(560px, 62vh);
+  }
+
+  .stage-area {
+    position: relative;
+    height: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(to right, transparent 0, black 4%, black 84%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, black 4%, black 84%, transparent 100%);
+  }
+
+  .stage-area::-webkit-scrollbar { display: none; }
+
+  .waiting {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+  }
+
+  .card {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 310px;
+    transform: translateY(-50%) scale(1);
+    transform-origin: left center;
+    transition: left 1.05s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.25rem 1.4rem 1.35rem;
+    box-shadow: 0 2px 6px rgba(26, 31, 54, 0.04), 0 14px 34px rgba(26, 31, 54, 0.07);
+    cursor: pointer;
+  }
+
+  .card.history { transform: translateY(-50%) scale(0.46); }
+
+  .card.history.peek {
+    transform-origin: center center;
+    transform: translateY(-50%) scale(1);
+    z-index: 5;
+  }
+
+  .card.no-anim { transition: none !important; }
+
+  .card-name { font-weight: 700; font-size: 1rem; }
+
+  .card-meta {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    color: var(--ink-soft);
+    margin-top: 0.15rem;
+  }
+
+  .card-amount {
+    font-weight: 700;
+    font-size: 1.7rem;
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+    margin-top: 0.55rem;
+  }
+
+  .card-category { font-size: 0.76rem; color: var(--ink-soft); margin-top: 0.1rem; }
+
+  .fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.65rem 1rem;
+    margin-top: 0.9rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .field { display: flex; flex-direction: column; gap: 0.15rem; }
+
+  .field-label {
+    font-size: 0.58rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .field-value { font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+  .field-value.errors { color: var(--risk-high); font-weight: 600; }
+
+  .signals { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.85rem; }
+
+  .signal {
+    font-size: 0.62rem;
+    font-weight: 600;
+    padding: 0.22rem 0.5rem;
+    border-radius: 999px;
+    background: var(--chip-bg);
+    color: var(--chip-ink);
+    white-space: nowrap;
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+
+  .signal.on { background: var(--risk-medium-bg); color: var(--risk-medium); }
+
+  .verdict-row {
+    margin-top: 0.85rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .verdict {
+    font-weight: 700;
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
+    padding: 0.3rem 0.6rem;
+    border-radius: 7px;
+    color: var(--ink-soft);
+    background: var(--chip-bg);
+  }
+
+  .verdict.low { color: var(--risk-low); background: var(--risk-low-bg); }
+  .verdict.medium { color: var(--risk-medium); background: var(--risk-medium-bg); }
+  .verdict.high { color: var(--risk-high); background: var(--risk-high-bg); }
+
+  .prob { font-family: var(--font-mono); font-size: 0.7rem; color: var(--ink-soft); }
+
+  .pending-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent-2);
+    display: inline-block;
+    animation: pulse-dot 1s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 0.3; transform: scale(0.85); }
+    50% { opacity: 1; transform: scale(1.15); }
+  }
+
+  .card.flagged-high { border-color: var(--risk-high); box-shadow: 0 0 0 3px var(--risk-high-bg); }
+
+  .card-hint { font-size: 0.6rem; color: var(--ink-soft); text-align: center; margin-top: 0.75rem; opacity: 0.7; }
+
+  .scroll-hint {
+    padding: 0.5rem 0 1.4rem;
+    text-align: center;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--ink-soft);
+    text-decoration: none;
+    display: block;
+    animation: bob 2.2s ease-in-out infinite;
+  }
+
+  @keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(5px); }
+  }
+
+  @media (max-width: 900px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .hero-demo { height: 480px; }
+  }
+
+  /* -- generic section shell -- */
+  .content-section, .stats-section {
+    padding: 7rem 1.5rem;
+    scroll-margin-top: 64px;
+    border-top: 1px solid var(--border);
+  }
+
+  .content-section.alt { background: var(--surface-alt); }
+
+  .section-inner {
+    max-width: 1160px;
+    margin: 0 auto;
+  }
+
+  .section-inner h2, .stats-heading h2 {
+    font-weight: 700;
+    font-size: clamp(1.7rem, 3.4vw, 2.4rem);
+    letter-spacing: -0.015em;
+    margin: 0 0 0.9rem;
+    text-wrap: balance;
+  }
+
+  .section-lead, .stats-heading p {
+    color: var(--ink-soft);
+    font-size: 0.98rem;
+    line-height: 1.65;
+    max-width: 42rem;
+    margin: 0 0 2.8rem;
+  }
+
+  .stats-heading { text-align: center; max-width: 40rem; margin: 0 auto 2.2rem; }
+  .stats-heading .section-lead { margin: 0 auto; }
+
+  /* -- fact grid (Dataset / Model) -- */
+  .fact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.1rem;
+  }
+
+  .fact-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.3rem 1.4rem;
+  }
+
+  .fact-value {
+    font-weight: 700;
+    font-size: 1.9rem;
+    letter-spacing: -0.01em;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .fact-label {
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    margin-top: 0.3rem;
+    line-height: 1.4;
+  }
+
+  /* -- section chart panels (dataset / model) -- */
+  .section-charts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.1rem;
+    margin-top: 1.3rem;
+  }
+
+  .bar-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem 1.5rem 1.5rem;
+  }
+
+  .bar-panel-title {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 1.2rem;
+  }
+
+  .bar-group { display: flex; flex-direction: column; gap: 1.1rem; }
+
+  .bar-item-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .bar-item-label span:first-child { color: var(--ink-soft); }
+  .bar-item-label span:last-child { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  .bar-track {
+    height: 10px;
+    border-radius: 999px;
+    background: var(--chip-bg);
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: var(--accent);
+  }
+
+  .bar-fill.alt { background: var(--accent-2); }
+
+  /* -- probability spectrum (methodology) -- */
+  .spectrum-wrap { margin-top: 1.6rem; }
+
+  .spectrum {
+    display: flex;
+    height: 38px;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .spectrum-zone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--surface);
+  }
+
+  .spectrum-zone.low { background: var(--risk-low); }
+  .spectrum-zone.medium { background: var(--risk-medium); }
+  .spectrum-zone.high { background: var(--risk-high); }
+
+  .spectrum-scale {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.68rem;
+    color: var(--ink-soft);
+    margin-top: 0.5rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* -- section kicker + split layouts -- */
+  .kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+
+  .kicker svg { width: 15px; height: 15px; }
+
+  .split-row {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 3.5rem;
+    align-items: center;
+    margin-top: 2.8rem;
+  }
+
+  .split-row.reverse { grid-template-columns: 0.95fr 1.05fr; }
+  .split-row.reverse .split-visual { order: -1; }
+
+  @media (max-width: 900px) {
+    .split-row, .split-row.reverse { grid-template-columns: 1fr; gap: 2rem; }
+    .split-row.reverse .split-visual { order: 0; }
+  }
+
+  .hero-stat-value {
+    font-weight: 800;
+    font-size: clamp(3rem, 6.5vw, 4.4rem);
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hero-stat-value .accent { color: var(--accent); }
+
+  .hero-stat-label {
+    margin-top: 0.7rem;
+    color: var(--ink-soft);
+    font-size: 0.92rem;
+    max-width: 22rem;
+    line-height: 1.5;
+  }
+
+  .mini-stat-list { display: flex; flex-direction: column; gap: 1rem; }
+
+  .mini-stat {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.1rem 1.3rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+  }
+
+  .mini-stat-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    background: var(--chip-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .mini-stat-icon svg { width: 19px; height: 19px; }
+
+  .mini-stat-value { font-weight: 700; font-size: 1.2rem; font-variant-numeric: tabular-nums; }
+  .mini-stat-label { font-size: 0.8rem; color: var(--ink-soft); margin-top: 0.1rem; }
+
+  /* -- ring / radial charts -- */
+  .ring-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.1rem;
+  }
+
+  .ring-panel-title {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .ring-wrap { position: relative; width: 190px; height: 190px; flex-shrink: 0; }
+  .ring-wrap.small { width: 128px; height: 128px; }
+
+  .ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+
+  .ring-track { fill: none; stroke: var(--chip-bg); }
+  .ring-fill { fill: none; stroke: var(--accent); stroke-linecap: round; transition: stroke-dasharray 0.6s ease; }
+  .ring-fill.alt { stroke: var(--accent-2); }
+
+  .ring-value {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ring-value .num { font-weight: 800; font-size: 2rem; font-variant-numeric: tabular-nums; }
+  .ring-wrap.small .ring-value .num { font-size: 1.4rem; }
+  .ring-value .cap { font-size: 0.66rem; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem; text-align: center; padding: 0 0.5rem; }
+
+  .gauge-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.2rem;
+  }
+
+  .gauge-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.7rem 1rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.9rem;
+  }
+
+  @media (max-width: 700px) {
+    .gauge-row { grid-template-columns: 1fr; }
+  }
+
+  /* -- feature bento grid -- */
+  .feature-bento {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.1rem;
+    margin-top: 2rem;
+  }
+
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.6rem 1.7rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .feature-card.big { grid-column: span 2; }
+
+  .feature-card-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--chip-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+  }
+
+  .feature-card-icon svg { width: 21px; height: 21px; }
+
+  .feature-card-name { font-weight: 700; font-size: 1.02rem; }
+  .feature-card-desc { color: var(--ink-soft); font-size: 0.85rem; line-height: 1.55; flex: 1; }
+
+  .feature-card-footer { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  @media (max-width: 900px) {
+    .feature-bento { grid-template-columns: repeat(2, 1fr); }
+    .feature-card.big { grid-column: span 2; }
+  }
+
+  @media (max-width: 560px) {
+    .feature-bento { grid-template-columns: 1fr; }
+    .feature-card.big { grid-column: span 1; }
+  }
+
+  /* -- methodology panels -- */
+  .method-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 2.1rem 2.3rem;
+  }
+
+  .method-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 0 0 0.9rem;
+  }
+
+  .method-panel-title .icon-badge {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: var(--chip-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .method-panel-title .icon-badge svg { width: 17px; height: 17px; }
+
+  .method-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.4rem;
+    margin-top: 2rem;
+  }
+
+  @media (max-width: 850px) {
+    .method-grid { grid-template-columns: 1fr; }
+  }
+
+  /* -- chip grid (dataset fields) -- */
+  .chip-grid { display: flex; flex-wrap: wrap; gap: 0.65rem; margin-top: 1.7rem; }
+
+  .chip {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    background: var(--chip-bg);
+    color: var(--ink);
+    padding: 0.5rem 0.9rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+
+  /* -- spec sheet (model tuning) -- */
+  .spec-sheet {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 0.4rem 1.8rem;
+  }
+
+  .spec-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.87rem;
+  }
+
+  .spec-row:last-child { border-bottom: none; }
+  .spec-row span:first-child { color: var(--ink-soft); }
+  .spec-row span:last-child { font-weight: 600; font-family: var(--font-mono); text-align: right; }
+
+  /* -- contrast columns (naive vs safeguarded) -- */
+  .contrast-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+    margin-top: 1.6rem;
+  }
+
+  @media (max-width: 700px) {
+    .contrast-grid { grid-template-columns: 1fr; }
+  }
+
+  .contrast-col { border-radius: 16px; padding: 1.5rem 1.7rem; }
+  .contrast-col.bad { background: var(--risk-high-bg); }
+  .contrast-col.good { background: var(--risk-low-bg); }
+
+  .contrast-title {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  .contrast-col.bad .contrast-title { color: var(--risk-high); }
+  .contrast-col.good .contrast-title { color: var(--risk-low); }
+
+  .contrast-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.7rem; }
+
+  .contrast-list li {
+    display: flex;
+    gap: 0.6rem;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+
+  .contrast-list li svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 0.2rem; }
+  .contrast-col.bad .contrast-list li svg { color: var(--risk-high); }
+  .contrast-col.good .contrast-list li svg { color: var(--risk-low); }
+
+  /* -- signal legend (features) -- */
+  .legend-list { display: flex; flex-direction: column; gap: 0.9rem; margin-top: 2rem; }
+
+  .legend-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+  }
+
+  .legend-swatch { width: 10px; height: 10px; border-radius: 50%; margin-top: 0.35rem; flex-shrink: 0; }
+  .legend-swatch.high { background: var(--risk-high); }
+  .legend-swatch.medium { background: var(--risk-medium); }
+  .legend-swatch.low { background: var(--chip-ink); }
+
+  .legend-text strong { display: block; font-size: 0.88rem; margin-bottom: 0.25rem; }
+  .legend-text span { font-size: 0.83rem; color: var(--ink-soft); line-height: 1.55; }
+
+  /* -- methodology -- */
+  .method-block { margin-bottom: 2.4rem; }
+  .method-block:last-child { margin-bottom: 0; }
+  .method-block h3 { font-size: 1.1rem; margin: 0 0 0.5rem; }
+  .method-block p { color: var(--ink-soft); font-size: 0.92rem; line-height: 1.6; max-width: 46rem; margin: 0; }
+
+  .timeline {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.3rem;
+    flex-wrap: wrap;
+  }
+
+  .timeline-step {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.55rem 1rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+
+  .timeline-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+  .timeline-arrow { color: var(--ink-soft); font-size: 1rem; }
+
+  .tier-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.1rem;
+    margin-top: 1.3rem;
+  }
+
+  .tier-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--chip-ink);
+    border-radius: 14px;
+    padding: 1.3rem 1.4rem;
+  }
+
+  .tier-card.low { border-top-color: var(--risk-low); }
+  .tier-card.medium { border-top-color: var(--risk-medium); }
+  .tier-card.high { border-top-color: var(--risk-high); }
+
+  .tier-name { font-weight: 700; font-size: 1rem; margin-bottom: 0.4rem; }
+  .tier-card.low .tier-name { color: var(--risk-low); }
+  .tier-card.medium .tier-name { color: var(--risk-medium); }
+  .tier-card.high .tier-name { color: var(--risk-high); }
+
+  .tier-card p { color: var(--ink-soft); font-size: 0.85rem; line-height: 1.5; margin: 0; }
+
+  /* -- features -- */
+  .feature-list { display: flex; flex-direction: column; gap: 0.9rem; }
+
+  .feature-row {
+    display: grid;
+    grid-template-columns: 12rem 1fr 9rem;
+    align-items: center;
+    gap: 1.2rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.3rem;
+  }
+
+  .feature-name { font-weight: 700; font-size: 0.92rem; }
+  .feature-desc { color: var(--ink-soft); font-size: 0.85rem; line-height: 1.5; }
+
+  .feature-strength-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 0.45rem; }
+
+  .feature-strength {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .feature-strength.high { color: var(--risk-high); background: var(--risk-high-bg); }
+  .feature-strength.medium { color: var(--risk-medium); background: var(--risk-medium-bg); }
+  .feature-strength.low { color: var(--ink-soft); background: var(--chip-bg); }
+
+  .feature-strength-wrap .bar-track { width: 100%; height: 6px; }
+  .feature-strength-wrap .bar-fill.high { background: var(--risk-high); }
+  .feature-strength-wrap .bar-fill.medium { background: var(--risk-medium); }
+  .feature-strength-wrap .bar-fill.low { background: var(--chip-ink); }
+
+  @media (max-width: 700px) {
+    .feature-row { grid-template-columns: 1fr; text-align: left; }
+    .feature-strength-wrap { align-items: flex-start; }
+  }
+
+  /* -- widgets grid (results) -- */
+  .widgets-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.4rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .chart-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.6rem 1.8rem 1.8rem;
+  }
+
+  .widget-line { grid-column: 1 / -1; }
+  .widget-stat { grid-column: span 1; display: flex; flex-direction: column; justify-content: center; }
+  .widget-bar { grid-column: span 2; }
+
+  @media (max-width: 900px) {
+    .widgets-grid { grid-template-columns: 1fr; }
+    .widget-stat, .widget-bar { grid-column: 1 / -1; }
+  }
+
+  .chart-title {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 1rem;
+  }
+
+  .chart-legend { display: flex; flex-wrap: wrap; gap: 0.9rem; margin-top: 0.9rem; }
+  .legend-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: var(--ink-soft); }
+  .legend-dot { width: 9px; height: 9px; border-radius: 50%; }
+
+  .big-stat {
+    font-weight: 700;
+    font-size: 3rem;
+    letter-spacing: -0.02em;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    margin: 0.2rem 0 0.6rem;
+  }
+
+  .info-copy { color: var(--ink-soft); font-size: 0.85rem; line-height: 1.5; margin: 0; }
+
+  /* -- modal -- */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(16, 19, 31, 0.5);
+    z-index: 50;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  .modal-backdrop.show { opacity: 1; pointer-events: auto; }
+
+  .modal {
+    width: min(480px, 90vw);
+    max-height: 80vh;
+    overflow-y: auto;
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 1.6rem 1.8rem 1.8rem;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
+  }
+
+  .modal-title { font-weight: 700; font-size: 1.15rem; margin-bottom: 1rem; }
+
+  .modal-row {
+    display: flex; justify-content: space-between; gap: 1rem;
+    padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem;
+  }
+
+  .modal-row span:first-child { color: var(--ink-soft); }
+  .modal-row span:last-child { font-variant-numeric: tabular-nums; font-weight: 600; }
+
+  .modal-close {
+    display: block; margin: 1.2rem auto 0;
+    background: var(--chip-bg); color: var(--ink);
+    border: none; border-radius: 8px;
+    padding: 0.5rem 1.2rem; font-size: 0.85rem; font-weight: 600;
+    cursor: pointer;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card { transition: opacity 0.35s ease; }
+    .pending-dot { animation: none; opacity: 0.7; }
+    .scroll-hint { animation: none; }
+  }
+</style>
+</head>
+<body>
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <a class="logo" href="#hero">
+        <svg class="logo-mark" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="13" fill="var(--accent)" opacity="0.08"/>
+          <circle cx="16" cy="16" r="13" stroke="var(--accent)" stroke-width="1.6"/>
+          <circle cx="16" cy="16" r="8" stroke="var(--accent)" stroke-width="1.3" opacity="0.5"/>
+          <g class="logo-sweep">
+            <path d="M16 16 L16 3 A13 13 0 0 1 27.3 9.5 Z" fill="var(--accent)" opacity="0.32"/>
+          </g>
+          <circle cx="16" cy="16" r="2.4" fill="var(--accent)"/>
+          <circle cx="21.6" cy="8.9" r="1.5" fill="var(--accent)"/>
+        </svg>
+        <span>AntiFraud</span>
+      </a>
+      <div class="nav-links">
+        <a href="#dataset">Dataset</a>
+        <a href="#model">Model</a>
+        <a href="#methodology">Methodology</a>
+        <a href="#features">Features</a>
+      </div>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"></button>
+    </div>
+  </nav>
+
+  <section class="hero-section" id="hero">
+    <div class="hero-grid">
+      <div class="hero-text">
+        <h1>Online <span class="accent-word">Anti-Fraud</span> System</h1>
+        <p class="subtitle">Every transaction is scored the instant it arrives: approved, sent to 3D authentication, or blocked, all in real time.</p>
+        <div class="hero-badges">
+          <span class="hero-badge">5.3M+ transactions trained</span>
+          <span class="hero-badge">XGBoost</span>
+          <span class="hero-badge">79.6% PR-AUC</span>
+        </div>
+      </div>
+
+      <div class="hero-demo">
+        <div class="stage-area" id="stageArea">
+          <div class="waiting" id="waitingLabel">Waiting for the next transaction…</div>
+        </div>
+      </div>
+    </div>
+
+    <a class="scroll-hint" href="#results">↓ Scroll for live results</a>
+  </section>
+
+  <section class="stats-section" id="results">
+    <div class="stats-heading">
+      <h2>Live results</h2>
+      <p class="section-lead">Every decision the model makes right now, compared against the real outcome in the replayed 2016 holdout data.</p>
+    </div>
+
+    <div class="widgets-grid">
+      <div class="chart-panel widget-line">
+        <div class="chart-title">Decisions over time</div>
+        <svg id="statusChart" viewBox="0 0 900 200" preserveAspectRatio="none" style="width:100%; height:200px; display:block;"></svg>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-dot" style="background:var(--risk-low)"></span>Approved</span>
+          <span class="legend-item"><span class="legend-dot" style="background:var(--risk-medium)"></span>3D Auth</span>
+          <span class="legend-item"><span class="legend-dot" style="background:var(--risk-high)"></span>Blocked</span>
+        </div>
+      </div>
+
+      <div class="chart-panel widget-stat">
+        <div class="chart-title">Catch rate</div>
+        <div class="big-stat" id="catchRateStat">N/A</div>
+        <p class="info-copy">Share of actual fraud in the replayed data that the model correctly blocked.</p>
+      </div>
+
+      <div class="chart-panel widget-bar">
+        <div class="chart-title">Fraud caught vs missed</div>
+        <svg id="fraudChart" viewBox="0 0 500 200" style="width:100%; height:200px; display:block;"></svg>
+      </div>
+    </div>
+  </section>
+
+  <section class="content-section" id="dataset">
+    <div class="section-inner">
+      <div class="kicker">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="7" ry="2.6"/><path d="M5 5v6c0 1.4 3.1 2.6 7 2.6s7-1.2 7-2.6V5"/><path d="M5 11v6c0 1.4 3.1 2.6 7 2.6s7-1.2 7-2.6v-6"/></svg>
+        Dataset
+      </div>
+      <h2>Six years of card transactions, split cleanly in time</h2>
+      <p class="section-lead">A synthetic dataset of cardholders, cards, and transactions, split so the model is trained only on the past and tested on data it has never seen.</p>
+
+      <div class="split-row">
+        <div>
+          <div class="hero-stat-value">5.3M<span class="accent">+</span></div>
+          <p class="hero-stat-label">transactions used to train the model, spanning 2010 to 2015 across every cardholder in the dataset.</p>
+        </div>
+        <div class="split-visual">
+          <div class="mini-stat-list">
+            <div class="mini-stat">
+              <div class="mini-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5.5" width="16" height="14.5" rx="2"/><path d="M4 10h16M8 3v4M16 3v4"/></svg></div>
+              <div><div class="mini-stat-value">932K</div><div class="mini-stat-label">Holdout transactions replayed live from 2016</div></div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><circle cx="17" cy="9" r="2.6"/><path d="M15.2 13.7c2 .3 3.8 2 3.8 5.3"/></svg></div>
+              <div><div class="mini-stat-value">2,000</div><div class="mini-stat-label">Cardholders</div></div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10.5h18M7 15h4"/></svg></div>
+              <div><div class="mini-stat-value">6,146</div><div class="mini-stat-label">Cards issued</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-charts" style="margin-top: 3.2rem;">
+        <div class="ring-panel">
+          <div class="ring-panel-title">Fraud rate, 2016 holdout</div>
+          <div class="ring-wrap">
+            <svg viewBox="0 0 120 120">
+              <circle class="ring-track" cx="60" cy="60" r="52" stroke-width="10"></circle>
+              <circle class="ring-fill" cx="60" cy="60" r="52" stroke-width="10" stroke-dasharray="6.01 326.73"></circle>
+            </svg>
+            <div class="ring-value"><span class="num">1.84%</span><span class="cap">Of live transactions</span></div>
+          </div>
+          <p class="info-copy" style="text-align:center;">Fewer than 2 in 100 transactions are fraudulent, the class imbalance the model is built to handle.</p>
+        </div>
+
+        <div class="bar-panel">
+          <div class="bar-panel-title">Fraud rate by period</div>
+          <div class="bar-group">
+            <div>
+              <div class="bar-item-label"><span>Training window (2010 to 2015)</span><span>1.08%</span></div>
+              <div class="bar-track"><div class="bar-fill" style="width:58.7%"></div></div>
+            </div>
+            <div>
+              <div class="bar-item-label"><span>Holdout (2016)</span><span>1.84%</span></div>
+              <div class="bar-track"><div class="bar-fill alt" style="width:100%"></div></div>
+            </div>
+          </div>
+          <div class="bar-panel-title" style="margin-top:1.6rem;">Transaction volume by split</div>
+          <div class="bar-group">
+            <div>
+              <div class="bar-item-label"><span>Training</span><span>5.3M+</span></div>
+              <div class="bar-track"><div class="bar-fill" style="width:100%"></div></div>
+            </div>
+            <div>
+              <div class="bar-item-label"><span>Holdout</span><span>932K</span></div>
+              <div class="bar-track"><div class="bar-fill alt" style="width:17.5%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 3.2rem;">
+        <div class="bar-panel-title">Fields captured on every transaction</div>
+        <div class="chip-grid">
+          <span class="chip">date &amp; time</span>
+          <span class="chip">client_id</span>
+          <span class="chip">card_id</span>
+          <span class="chip">amount</span>
+          <span class="chip">use_chip</span>
+          <span class="chip">merchant_id</span>
+          <span class="chip">merchant_city</span>
+          <span class="chip">merchant_state</span>
+          <span class="chip">zip</span>
+          <span class="chip">mcc</span>
+          <span class="chip">errors</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content-section alt" id="model">
+    <div class="section-inner">
+      <div class="kicker">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M9.5 7V4M14.5 7V4M9.5 20v-3M14.5 20v-3M7 9.5H4M7 14.5H4M20 9.5h-3M20 14.5h-3"/></svg>
+        Model
+      </div>
+      <h2>An XGBoost classifier, tuned for one honest test</h2>
+      <p class="section-lead">A gradient-boosted XGBoost classifier, tuned with Optuna and trained separately for online and in-person transactions since the two channels behave completely differently.</p>
+
+      <div class="split-row reverse">
+        <div>
+          <h3 style="margin:0 0 0.9rem; font-size:1.05rem;">Why two models, not one</h3>
+          <p class="info-copy" style="max-width:28rem; font-size:0.92rem;">Online and in-person spending leave very different footprints, so each channel gets its own tuned model instead of forcing one classifier to learn both behaviors at once.</p>
+          <div class="mini-stat-list" style="margin-top:1.6rem;">
+            <div class="mini-stat">
+              <div class="mini-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="M3 12l9 5 9-5M3 16l9 5 9-5"/></svg></div>
+              <div><div class="mini-stat-value">165</div><div class="mini-stat-label">Boosting rounds, regularized against overfitting</div></div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v6M12 9 6 15v6M12 9l6 6v6"/></svg></div>
+              <div><div class="mini-stat-value">2</div><div class="mini-stat-label">Channel-specific models: online and in-person</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="split-visual">
+          <div class="ring-panel">
+            <div class="ring-panel-title">Recall, 2016 holdout</div>
+            <div class="ring-wrap">
+              <svg viewBox="0 0 120 120">
+                <circle class="ring-track" cx="60" cy="60" r="52" stroke-width="10"></circle>
+                <circle class="ring-fill alt" cx="60" cy="60" r="52" stroke-width="10" stroke-dasharray="295.04 326.73"></circle>
+              </svg>
+              <div class="ring-value"><span class="num">90.3%</span><span class="cap">Of fraud caught</span></div>
+            </div>
+            <p class="info-copy" style="text-align:center;">Nine out of ten fraudulent transactions in the honest 2016 test were flagged.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-charts" style="margin-top: 3.2rem;">
+        <div class="bar-panel">
+          <div class="bar-panel-title">Honest test performance (2016 holdout)</div>
+          <div class="bar-group">
+            <div>
+              <div class="bar-item-label"><span>PR-AUC</span><span>79.6%</span></div>
+              <div class="bar-track"><div class="bar-fill" style="width:79.6%"></div></div>
+            </div>
+            <div>
+              <div class="bar-item-label"><span>Recall</span><span>90.3%</span></div>
+              <div class="bar-track"><div class="bar-fill" style="width:90.3%"></div></div>
+            </div>
+            <div>
+              <div class="bar-item-label"><span>Precision</span><span>50.8%</span></div>
+              <div class="bar-track"><div class="bar-fill" style="width:50.8%"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bar-panel">
+          <div class="bar-panel-title">How it's tuned</div>
+          <div class="spec-sheet" style="border:none; padding:0;">
+            <div class="spec-row"><span>Algorithm</span><span>XGBoost</span></div>
+            <div class="spec-row"><span>Hyperparameter search</span><span>Optuna</span></div>
+            <div class="spec-row"><span>Regularization</span><span>colsample_bytree</span></div>
+            <div class="spec-row"><span>Boosting rounds</span><span>165</span></div>
+            <div class="spec-row"><span>Validation split</span><span>Time-based</span></div>
+            <div class="spec-row"><span>Channels</span><span>2 dedicated models</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content-section" id="methodology">
+    <div class="section-inner">
+      <div class="kicker">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 2.5v5.5c0 5-3.5 8.5-7 9.5-3.5-1-7-4.5-7-9.5V5.5L12 3Z"/><path d="M9 12l2 2 4-4.5"/></svg>
+        Methodology
+      </div>
+      <h2>Two decisions that keep this model honest</h2>
+      <p class="section-lead">Both exist to stop the future from quietly leaking into the past during training.</p>
+
+      <div class="method-grid">
+        <div class="method-panel">
+          <div class="method-panel-title">
+            <span class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v6M12 9 6 15v6M12 9l6 6v6"/></svg></span>
+            Channel isolation
+          </div>
+          <p>Online and in-person purchase histories are kept completely separate when building a customer's behavioral profile. A customer's card-present shopping habits say nothing reliable about their online habits, and mixing them blurs the signal the model actually needs.</p>
+        </div>
+
+        <div class="method-panel">
+          <div class="method-panel-title">
+            <span class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span>
+            14-day trust quarantine
+          </div>
+          <p>A transaction only counts toward a customer's trusted history once 14 days have passed without a confirmed fraud report, mirroring how long real fraud confirmation actually takes.</p>
+          <div class="timeline">
+            <div class="timeline-step"><span class="timeline-dot"></span>Transaction occurs</div>
+            <span class="timeline-arrow">→</span>
+            <div class="timeline-step"><span class="timeline-dot"></span>14-day quarantine</div>
+            <span class="timeline-arrow">→</span>
+            <div class="timeline-step"><span class="timeline-dot"></span>Trusted history</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="method-panel" style="margin-top: 1.4rem;">
+        <div class="method-panel-title">
+          <span class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
+          Why this matters
+        </div>
+        <div class="contrast-grid">
+          <div class="contrast-col bad">
+            <div class="contrast-title">Naive approach</div>
+            <ul class="contrast-list">
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>Mixes online and in-person history into one profile</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>Trusts a transaction the instant it happens</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>One model tries to learn every channel at once</li>
+            </ul>
+          </div>
+          <div class="contrast-col good">
+            <div class="contrast-title">This system</div>
+            <ul class="contrast-list">
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>Builds a separate behavioral profile per channel</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>Waits 14 days before a transaction is trusted</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>A dedicated, separately tuned model per channel</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="method-panel" style="margin-top: 1.4rem;">
+        <div class="method-panel-title">
+          <span class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h8M16 6h4M4 12h4M12 12h8M4 18h11M18 18h2"/><circle cx="14" cy="6" r="1.8"/><circle cx="8" cy="12" r="1.8"/><circle cx="16" cy="18" r="1.8"/></svg></span>
+          Three-tier decisions
+        </div>
+        <p style="color:var(--ink-soft); font-size:0.92rem; margin:0 0 0.4rem;">Every probability the model outputs lands in one of three zones, calibrated against the honest 2016 test.</p>
+        <div class="spectrum-wrap">
+          <div class="spectrum">
+            <div class="spectrum-zone low" style="width:20.5%">Approved</div>
+            <div class="spectrum-zone medium" style="width:62.5%">3D Authentication</div>
+            <div class="spectrum-zone high" style="width:17%">Blocked</div>
+          </div>
+          <div class="spectrum-scale"><span>0%</span><span>20.5%</span><span>83%</span><span>100%</span></div>
+        </div>
+        <div class="tier-grid">
+          <div class="tier-card low">
+            <div class="tier-name">Approved</div>
+            <p>Fraud probability is low enough to let the transaction through with zero friction.</p>
+          </div>
+          <div class="tier-card medium">
+            <div class="tier-name">Sent 3D Authentication</div>
+            <p>A mid-range score triggers a step-up check, like an SMS code, instead of an outright block.</p>
+          </div>
+          <div class="tier-card high">
+            <div class="tier-name">Blocked</div>
+            <p>A high-confidence score stops the transaction before it ever settles.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content-section alt" id="features">
+    <div class="section-inner">
+      <div class="kicker">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h8M16 6h4M4 12h4M12 12h8M4 18h11M18 18h2"/><circle cx="14" cy="6" r="1.8"/><circle cx="8" cy="12" r="1.8"/><circle cx="16" cy="18" r="1.8"/></svg>
+        Features
+      </div>
+      <h2>Signals the model watches on every transaction</h2>
+      <p class="section-lead">Every prediction is built from the same signals shown on each live transaction card above.</p>
+
+      <div class="feature-bento">
+        <div class="feature-card big">
+          <div class="feature-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9l1-4h14l1 4"/><path d="M4 9a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0"/><path d="M5 9v10h14V9"/><path d="M9.5 19v-5h5v5"/></svg></div>
+          <div class="feature-card-name">New merchant</div>
+          <div class="feature-card-desc">Has this customer ever paid this specific merchant before, at least 14 days ago?</div>
+          <div class="feature-card-footer">
+            <div class="feature-strength-wrap" style="align-items:flex-start; width:100%;">
+              <span class="feature-strength high">High signal</span>
+              <div class="bar-track" style="width:100%;"><div class="bar-fill high" style="width:92%"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-card big">
+          <div class="feature-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 12.3 12.7 20a1.6 1.6 0 0 1-2.3 0l-7-7a1.6 1.6 0 0 1 0-2.3l7.7-7.7H18a2.6 2.6 0 0 1 2.6 2.6v6.7Z"/><circle cx="15.5" cy="8.5" r="1.4"/></svg></div>
+          <div class="feature-card-name">New category</div>
+          <div class="feature-card-desc">Has this customer ever spent in this merchant category (MCC) before?</div>
+          <div class="feature-card-footer">
+            <div class="feature-strength-wrap" style="align-items:flex-start; width:100%;">
+              <span class="feature-strength high">High signal</span>
+              <div class="bar-track" style="width:100%;"><div class="bar-fill high" style="width:88%"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h3l2-6 4 12 2-6h7"/></svg></div>
+          <div class="feature-card-name">Amount z-score</div>
+          <div class="feature-card-desc">How unusual is this amount compared to the customer's own trusted spending history?</div>
+          <div class="feature-card-footer">
+            <div class="feature-strength-wrap" style="align-items:flex-start; width:100%;">
+              <span class="feature-strength medium">Medium signal</span>
+              <div class="bar-track" style="width:100%;"><div class="bar-fill medium" style="width:60%"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></div>
+          <div class="feature-card-name">Transactions (1h)</div>
+          <div class="feature-card-desc">How many transactions this card has made in the last hour, a velocity check.</div>
+          <div class="feature-card-footer">
+            <div class="feature-strength-wrap" style="align-items:flex-start; width:100%;">
+              <span class="feature-strength medium">Medium signal</span>
+              <div class="bar-track" style="width:100%;"><div class="bar-fill medium" style="width:55%"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v9l7.8 4.5"/><circle cx="12" cy="12" r="8.5"/></svg></div>
+          <div class="feature-card-name">Online history ratio</div>
+          <div class="feature-card-desc">What share of this card's lifetime activity has been online versus in-person.</div>
+          <div class="feature-card-footer">
+            <div class="feature-strength-wrap" style="align-items:flex-start; width:100%;">
+              <span class="feature-strength low">Context signal</span>
+              <div class="bar-track" style="width:100%;"><div class="bar-fill low" style="width:30%"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 21.5 20H2.5Z"/><path d="M12 9.5v4.5M12 17h.01"/></svg></div>
+          <div class="feature-card-name">Error flags</div>
+          <div class="feature-card-desc">Bad PIN, bad CVV, insufficient balance, or a technical glitch on this or recent attempts.</div>
+          <div class="feature-card-footer">
+            <div class="feature-strength-wrap" style="align-items:flex-start; width:100%;">
+              <span class="feature-strength medium">Medium signal</span>
+              <div class="bar-track" style="width:100%;"><div class="bar-fill medium" style="width:58%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="legend-list">
+        <div class="legend-row">
+          <span class="legend-swatch high"></span>
+          <div class="legend-text"><strong>High signal</strong><span>Strongly separates fraud from legitimate activity on its own.</span></div>
+        </div>
+        <div class="legend-row">
+          <span class="legend-swatch medium"></span>
+          <div class="legend-text"><strong>Medium signal</strong><span>Adds useful context but rarely decides a case by itself.</span></div>
+        </div>
+        <div class="legend-row">
+          <span class="legend-swatch low"></span>
+          <div class="legend-text"><strong>Context signal</strong><span>Describes the account's general behavior rather than this specific transaction.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal" id="modal"></div>
+  </div>
+
+<script>
+  var MCC_NAMES = {
+    "4784": "Tolls & Bridge Fees",
+    "5411": "Grocery Stores",
+    "5732": "Electronics Stores",
+    "6051": "Non-FI, Money Orders",
+    "4899": "Cable & Pay TV/Radio",
+    "5812": "Restaurants",
+    "5912": "Drug Stores & Pharmacies",
+    "5999": "Misc. Retail",
+    "4900": "Utilities",
+    "5691": "Clothing Stores",
+    "7995": "Betting & Gambling",
+    "4829": "Wire Transfer Money Orders",
+    "5045": "Computers & Peripherals",
+    "5311": "Department Stores",
+    "5941": "Sporting Goods",
+    "7011": "Hotels & Lodging",
+    "4511": "Airlines",
+    "5261": "Nurseries & Garden Supply",
+    "8398": "Charitable & Social Service",
+    "6300": "Insurance"
+  };
+
+  function mccLabel(mcc) {
+    var name = MCC_NAMES[String(mcc)];
+    return name ? name : "MCC " + mcc;
+  }
+
+  var FIRST_NAMES = ["James","Mary","Robert","Patricia","John","Jennifer","Michael","Linda","David","Elizabeth","William","Barbara","Richard","Susan","Joseph","Jessica","Thomas","Sarah","Charles","Karen","Christopher","Nancy","Daniel","Lisa","Matthew","Margaret","Anthony","Betty","Mark","Sandra","Donald","Ashley","Steven","Dorothy","Paul","Kimberly","Andrew","Emily","Joshua","Donna","Kenneth","Michelle","Kevin","Carol","Brian","Amanda","George","Melissa","Edward","Deborah","Ronald","Stephanie","Timothy","Rebecca","Jason","Sharon","Jeffrey","Laura","Ryan","Cynthia","Jacob","Kathleen","Gary","Amy","Nicholas","Angela","Eric","Shirley","Jonathan","Anna","Stephen","Brenda","Larry","Pamela","Justin","Emma","Scott","Nicole","Brandon","Helen","Benjamin","Samantha","Samuel","Katherine","Gregory","Christine","Alexander","Debra","Patrick","Rachel","Frank","Catherine","Raymond","Carolyn","Jack","Janet","Dennis","Ruth","Jerry","Maria","Tyler","Heather","Aaron","Diane"];
+  var LAST_NAMES = ["Smith","Johnson","Williams","Brown","Jones","Garcia","Miller","Davis","Rodriguez","Martinez","Hernandez","Lopez","Gonzalez","Wilson","Anderson","Thomas","Taylor","Moore","Jackson","Martin","Lee","Perez","Thompson","White","Harris","Sanchez","Clark","Ramirez","Lewis","Robinson","Walker","Young","Allen","King","Wright","Scott","Torres","Nguyen","Hill","Flores","Green","Adams","Nelson","Baker","Hall","Rivera","Campbell","Mitchell","Carter","Roberts","Gomez","Phillips","Evans","Turner","Diaz","Parker","Cruz","Edwards","Collins","Reyes","Stewart","Morris","Morales","Murphy","Cook","Rogers","Gutierrez","Ortiz","Morgan","Cooper","Peterson","Bailey","Reed","Kelly","Howard","Ramos","Kim","Cox","Ward","Richardson","Watson","Brooks","Chavez","Wood","James","Bennett","Gray","Mendoza","Ruiz","Hughes","Price","Alvarez","Castillo","Sanders","Patel","Myers","Long","Ross","Foster","Jimenez","Powell"];
+
+  function clientName(clientId) {
+    var n = Number(clientId) || 0;
+    var first = FIRST_NAMES[n % FIRST_NAMES.length];
+    var last = LAST_NAMES[Math.floor(n / FIRST_NAMES.length) % LAST_NAMES.length];
+    return first + " " + last;
+  }
+
+  var FEATURE_LABELS = {
+    result: "Fraud probability",
+    risk_level: "Risk level",
+    binary_prediction: "Binary decision",
+    time_since_last_trx: "Time since last txn (s)",
+    online_history_ratio: "Online history ratio",
+    is_new_merchant: "New merchant",
+    is_new_mcc: "New category",
+    user_amount_z_score: "Amount z-score",
+    trx_count_1h: "Transactions (1h)",
+    trx_amount_1h: "Transaction amount (1h)",
+    has_bad_pin: "Bad PIN this txn",
+    has_insufficient_balance: "Insufficient balance this txn",
+    has_technical_glitch: "Technical glitch this txn",
+    bad_pin_count_1h: "Bad PIN count (1h)",
+    bad_cvv_count_1h: "Bad CVV count (1h)",
+    insufficient_balance_count_1h: "Insufficient balance count (1h)",
+    tech_glitch_count_1h: "Tech glitch count (1h)"
+  };
+
+  var BIG_WIDTH = 310;
+  var HISTORY_SCALE = 0.46;
+  var GAP = 22;
+  var MAX_HISTORY = 8;
+  var MAX_CHART_POINTS = 40;
+
+  var stageArea = document.getElementById("stageArea");
+  var waitingLabel = document.getElementById("waitingLabel");
+  var modalBackdrop = document.getElementById("modalBackdrop");
+  var modal = document.getElementById("modal");
+  var items = [];
+
+  var API_URL = window.location.protocol + "//" + window.location.hostname + ":8050/api/v1/model/predict";
+
+  function verdictLabel(risk) {
+    if (risk === "low") return "Approved";
+    if (risk === "medium") return "Sent 3D Authentication";
+    return "Blocked";
+  }
+
+  function buildCard(txn) {
+    var el = document.createElement("div");
+    el.className = "card";
+    el.innerHTML =
+      '<div class="card-name">' + clientName(txn.client_id) + '</div>' +
+      '<div class="card-meta">TXN #' + txn.id + " &middot; " + (txn.date || "").replace("T", " ") + '</div>' +
+      '<div class="card-amount">$' + Number(txn.amount).toFixed(2) + '</div>' +
+      '<div class="card-category">' + mccLabel(txn.mcc) + '</div>' +
+      '<div class="fields">' +
+        field("Client ID", txn.client_id) +
+        field("Card ID", txn.card_id) +
+        field("Channel", txn.use_chip || "Online Transaction") +
+        field("Errors", txn.errors || "None", txn.errors ? "errors" : "") +
+        field("Txns (1h)", "…", "", "trxCount") +
+        field("Online history", "…", "", "onlineRatio") +
+      '</div>' +
+      '<div class="signals">' +
+        '<span class="signal" id="sigMerchant">New merchant</span>' +
+        '<span class="signal" id="sigMcc">New category</span>' +
+      '</div>' +
+      '<div class="verdict-row">' +
+        '<span class="prob" id="prob"><span class="pending-dot"></span> Scoring…</span>' +
+        '<span class="verdict" id="verdict">…</span>' +
+      '</div>' +
+      '<div class="card-hint">Click for full report</div>';
+    return el;
+  }
+
+  function field(label, value, extraClass, id) {
+    return '<div class="field"><span class="field-label">' + label + '</span>' +
+      '<span class="field-value' + (extraClass ? " " + extraClass : "") + '"' + (id ? ' id="' + id + '"' : "") + '>' + value + "</span></div>";
+  }
+
+  function callPredict(txn) {
+    var body = {
+      id: txn.id,
+      date: txn.date,
+      client_id: txn.client_id,
+      card_id: txn.card_id,
+      amount: txn.amount,
+      use_chip: txn.use_chip,
+      merchant_id: txn.merchant_id,
+      merchant_city: txn.merchant_city,
+      merchant_state: txn.merchant_state,
+      zip: txn.zip,
+      mcc: txn.mcc,
+      errors: txn.errors
+    };
+    return fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    }).then(function (r) { return r.json(); });
+  }
+
+  function relayout() {
+    var stageWidth = stageArea.clientWidth;
+    var x = Math.max(16, stageWidth / 2 - BIG_WIDTH / 2);
+
+    items.forEach(function (el, i) {
+      if (i === 0) {
+        el.classList.remove("history");
+      } else {
+        el.classList.add("history");
+      }
+      el.style.left = x + "px";
+      x += i === 0 ? BIG_WIDTH + GAP : BIG_WIDTH * HISTORY_SCALE + GAP;
+    });
+  }
+
+  function getCentralHistoryCard() {
+    var stageRect = stageArea.getBoundingClientRect();
+    var centerX = stageRect.left + stageRect.width / 2;
+    var closest = null;
+    var closestDist = Infinity;
+
+    items.forEach(function (el, i) {
+      if (i === 0) return;
+      var rect = el.getBoundingClientRect();
+      var elCenter = rect.left + rect.width / 2;
+      var dist = Math.abs(elCenter - centerX);
+      if (dist < closestDist) {
+        closestDist = dist;
+        closest = el;
+      }
+    });
+
+    return closest && closestDist < BIG_WIDTH * HISTORY_SCALE ? closest : null;
+  }
+
+  function updatePeek() {
+    var closest = getCentralHistoryCard();
+    items.forEach(function (el) { el.classList.remove("peek"); });
+    if (closest) closest.classList.add("peek");
+  }
+
+  var scrollTicking = false;
+  stageArea.addEventListener("scroll", function () {
+    if (scrollTicking) return;
+    scrollTicking = true;
+    requestAnimationFrame(function () {
+      updatePeek();
+      scrollTicking = false;
+    });
+  });
+
+  function openModal(txn, resp) {
+    if (!resp) return;
+    var rows = "";
+    Object.keys(FEATURE_LABELS).forEach(function (key) {
+      if (!(key in resp)) return;
+      var val = resp[key];
+      if (typeof val === "number" && !Number.isInteger(val)) val = val.toFixed(4);
+      if (typeof val === "boolean" || key.indexOf("has_") === 0 || key.indexOf("is_") === 0) {
+        val = val ? "Yes" : "No";
+      }
+      rows += '<div class="modal-row"><span>' + FEATURE_LABELS[key] + '</span><span>' + val + '</span></div>';
+    });
+
+    modal.innerHTML =
+      '<div class="modal-title">' + clientName(txn.client_id) + " &mdash; TXN #" + txn.id + '</div>' +
+      rows +
+      '<button class="modal-close" id="modalClose">Close</button>';
+
+    modalBackdrop.classList.add("show");
+    document.getElementById("modalClose").addEventListener("click", closeModal);
+  }
+
+  function closeModal() {
+    modalBackdrop.classList.remove("show");
+  }
+
+  modalBackdrop.addEventListener("click", function (e) {
+    if (e.target === modalBackdrop) closeModal();
+  });
+
+  // -- charts --
+  var statusChartSvg = document.getElementById("statusChart");
+  var fraudChartSvg = document.getElementById("fraudChart");
+  var statusSeries = { low: [0], medium: [0], high: [0] };
+  var fraudCounts = { caught: 0, missed: 0 };
+
+  function pushPoint(series, key) {
+    Object.keys(series).forEach(function (k) {
+      var last = series[k][series[k].length - 1];
+      series[k].push(k === key ? last + 1 : last);
+    });
+    Object.keys(series).forEach(function (k) {
+      if (series[k].length > MAX_CHART_POINTS) series[k].shift();
+    });
+  }
+
+  function renderLineChart(svg, series, colors, viewW, viewH) {
+    var keys = Object.keys(series);
+    var maxLen = Math.max.apply(null, keys.map(function (k) { return series[k].length; }));
+    var maxVal = 1;
+    keys.forEach(function (k) {
+      series[k].forEach(function (v) { if (v > maxVal) maxVal = v; });
+    });
+
+    var padding = 14;
+    var w = viewW - padding * 2;
+    var h = viewH - padding * 2;
+
+    svg.innerHTML = "";
+
+    for (var g = 0; g <= 3; g++) {
+      var gy = padding + (h / 3) * g;
+      var line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      line.setAttribute("x1", padding);
+      line.setAttribute("x2", viewW - padding);
+      line.setAttribute("y1", gy);
+      line.setAttribute("y2", gy);
+      line.setAttribute("stroke", "currentColor");
+      line.setAttribute("stroke-opacity", "0.08");
+      svg.appendChild(line);
+    }
+
+    keys.forEach(function (k, idx) {
+      var data = series[k];
+      if (data.length < 2) return;
+      var points = data.map(function (v, i) {
+        var x = padding + (i / (maxLen - 1 || 1)) * w;
+        var y = padding + h - (v / maxVal) * h;
+        return x.toFixed(1) + "," + y.toFixed(1);
+      }).join(" ");
+      var poly = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+      poly.setAttribute("points", points);
+      poly.setAttribute("fill", "none");
+      poly.setAttribute("stroke", colors[idx]);
+      poly.setAttribute("stroke-width", "2.6");
+      poly.setAttribute("stroke-linecap", "round");
+      poly.setAttribute("stroke-linejoin", "round");
+      svg.appendChild(poly);
+    });
+  }
+
+  function renderBarChart(svg, data, colors, viewW, viewH) {
+    var keys = Object.keys(data);
+    var maxVal = Math.max.apply(null, keys.map(function (k) { return data[k]; }).concat([1]));
+    var padding = 34;
+    var w = viewW - padding * 2;
+    var h = viewH - padding * 2 - 16;
+    var gap = w / keys.length;
+    var barWidth = Math.min(gap * 0.4, 90);
+
+    svg.innerHTML = "";
+    keys.forEach(function (k, i) {
+      var val = data[k];
+      var barH = maxVal ? (val / maxVal) * h : 0;
+      var x = padding + gap * i + (gap - barWidth) / 2;
+      var y = padding + h - barH;
+
+      var rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      rect.setAttribute("x", x);
+      rect.setAttribute("y", y);
+      rect.setAttribute("width", barWidth);
+      rect.setAttribute("height", Math.max(barH, 2));
+      rect.setAttribute("rx", 8);
+      rect.setAttribute("fill", colors[i]);
+      svg.appendChild(rect);
+
+      var valueLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      valueLabel.setAttribute("x", x + barWidth / 2);
+      valueLabel.setAttribute("y", y - 10);
+      valueLabel.setAttribute("text-anchor", "middle");
+      valueLabel.setAttribute("font-size", "18");
+      valueLabel.setAttribute("font-weight", "700");
+      valueLabel.setAttribute("fill", colors[i]);
+      valueLabel.textContent = val;
+      svg.appendChild(valueLabel);
+
+      var nameLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      nameLabel.setAttribute("x", x + barWidth / 2);
+      nameLabel.setAttribute("y", viewH - 10);
+      nameLabel.setAttribute("text-anchor", "middle");
+      nameLabel.setAttribute("font-size", "12");
+      nameLabel.setAttribute("fill", "currentColor");
+      nameLabel.setAttribute("opacity", "0.6");
+      nameLabel.textContent = k === "caught" ? "Caught" : "Missed";
+      svg.appendChild(nameLabel);
+    });
+  }
+
+  function getCssVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  var catchRateStat = document.getElementById("catchRateStat");
+
+  function redrawCharts() {
+    renderLineChart(statusChartSvg, statusSeries, [getCssVar("--risk-low"), getCssVar("--risk-medium"), getCssVar("--risk-high")], 900, 200);
+    renderBarChart(fraudChartSvg, fraudCounts, [getCssVar("--risk-low"), getCssVar("--risk-high")], 500, 200);
+
+    var totalFraud = fraudCounts.caught + fraudCounts.missed;
+    catchRateStat.textContent = totalFraud ? Math.round((fraudCounts.caught / totalFraud) * 100) + "%" : "N/A";
+  }
+
+  function handleTransaction(txn) {
+    if (waitingLabel.parentNode) waitingLabel.remove();
+
+    var card = buildCard(txn);
+    card.style.opacity = "0";
+    card._fullResponse = null;
+    stageArea.appendChild(card);
+
+    var wasNearStart = stageArea.scrollLeft < 40;
+    var anchorEl = wasNearStart ? null : getCentralHistoryCard();
+    var anchorLeftBefore = anchorEl ? parseFloat(anchorEl.style.left) : 0;
+
+    items.unshift(card);
+
+    card.addEventListener("click", function () {
+      openModal(txn, card._fullResponse);
+    });
+
+    if (items.length > MAX_HISTORY) {
+      items.slice(MAX_HISTORY).forEach(function (el) { el.remove(); });
+      items = items.slice(0, MAX_HISTORY);
+    }
+
+    if (anchorEl && items.indexOf(anchorEl) !== -1) {
+      // keep the card the user is currently examining visually stationary:
+      // reposition instantly (no transition) and compensate the scroll offset
+      // by exactly how far that card moved, instead of letting the whole
+      // history strip slide out from under the user.
+      items.forEach(function (el) { el.classList.add("no-anim"); });
+      relayout();
+      void stageArea.offsetWidth;
+      var anchorLeftAfter = parseFloat(anchorEl.style.left);
+      stageArea.scrollLeft += anchorLeftAfter - anchorLeftBefore;
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          items.forEach(function (el) { el.classList.remove("no-anim"); });
+        });
+      });
+    } else {
+      relayout();
+      if (wasNearStart) stageArea.scrollTo({ left: 0, behavior: "smooth" });
+    }
+
+    requestAnimationFrame(function () { card.style.opacity = "1"; });
+
+    callPredict(txn).then(function (resp) {
+      card._fullResponse = resp;
+
+      var prob = card.querySelector("#prob");
+      var verdict = card.querySelector("#verdict");
+      var sigMerchant = card.querySelector("#sigMerchant");
+      var sigMcc = card.querySelector("#sigMcc");
+      var trxCount = card.querySelector("#trxCount");
+      var onlineRatio = card.querySelector("#onlineRatio");
+
+      prob.textContent = "Probability " + (resp.result * 100).toFixed(1) + "%";
+      verdict.className = "verdict " + resp.risk_level;
+      verdict.textContent = verdictLabel(resp.risk_level);
+      trxCount.textContent = resp.trx_count_1h;
+      onlineRatio.textContent = (resp.online_history_ratio * 100).toFixed(0) + "%";
+
+      if (resp.is_new_merchant) sigMerchant.classList.add("on");
+      if (resp.is_new_mcc) sigMcc.classList.add("on");
+      if (resp.risk_level === "high") card.classList.add("flagged-high");
+
+      pushPoint(statusSeries, resp.risk_level);
+
+      if (txn.target === "Yes") {
+        fraudCounts[resp.risk_level === "high" || resp.risk_level === "medium" ? "caught" : "missed"]++;
+      }
+
+      redrawCharts();
+    }).catch(function () {
+      card.querySelector("#prob").textContent = "Scoring failed";
+    });
+  }
+
+  window.addEventListener("resize", relayout);
+
+  var themeToggle = document.getElementById("themeToggle");
+  var ICON_SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/></svg>';
+  var ICON_MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/></svg>';
+  function applyTheme(theme) {
+    if (theme) {
+      document.documentElement.setAttribute("data-theme", theme);
+      themeToggle.innerHTML = theme === "dark" ? ICON_SUN : ICON_MOON;
+    }
+    redrawCharts();
+  }
+  var savedTheme = localStorage.getItem("theme-preference");
+  if (savedTheme) applyTheme(savedTheme);
+  else themeToggle.innerHTML = window.matchMedia("(prefers-color-scheme: dark)").matches ? ICON_SUN : ICON_MOON;
+
+  themeToggle.addEventListener("click", function () {
+    var current = document.documentElement.getAttribute("data-theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    var next = current === "dark" ? "light" : "dark";
+    applyTheme(next);
+    localStorage.setItem("theme-preference", next);
+  });
+
+  redrawCharts();
+
+  function connect() {
+    var wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+    var ws = new WebSocket(wsProtocol + window.location.host + "/stream");
+
+    ws.onmessage = function (event) {
+      try {
+        var txn = JSON.parse(event.data);
+        handleTransaction(txn);
+      } catch (e) {}
+    };
+
+    ws.onclose = function () {
+      setTimeout(connect, 2000);
+    };
+  }
+
+  connect();
+</script>
+</body>
+</html>
