@@ -25,6 +25,8 @@ jobs:
             dockerfile: simulator/Dockerfile
           - image: fraud-sync-worker
             dockerfile: sync_worker/Dockerfile
+          - image: fraud-drift-worker
+            dockerfile: drift_worker/Dockerfile
     steps:
       - uses: actions/checkout@v4
 

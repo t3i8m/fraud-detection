@@ -52,6 +52,7 @@ CREATE TABLE transactions (
 
 CREATE TABLE predictions (
     id BIGINT PRIMARY KEY REFERENCES transactions(id),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     fraud_probability NUMERIC(12,2),
     risk_level TEXT,
     time_since_last_trx NUMERIC,
@@ -70,6 +71,22 @@ CREATE TABLE predictions (
     tech_glitch_count_1h INTEGER,
     binary_prediction TEXT
 );
+
+CREATE TABLE model_drift_reports (
+    id SERIAL PRIMARY KEY,
+    computed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    reference_window_start TIMESTAMPTZ,
+    reference_window_end TIMESTAMPTZ,
+    current_window_start TIMESTAMPTZ,
+    current_window_end TIMESTAMPTZ,
+    dataset_drift BOOLEAN,
+    drift_share NUMERIC,
+    n_features_analyzed INTEGER,
+    n_features_drifted INTEGER,
+    details JSONB
+);
+
+CREATE INDEX idx_predictions_created_at ON predictions (created_at);
 
 CREATE TABLE holdout_transactions (
     id BIGINT PRIMARY KEY,
