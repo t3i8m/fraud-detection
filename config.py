@@ -1,5 +1,5 @@
-THRESHOLD_ONLINE = 0.5
-THRESHOLD_PHYSICAL = 0.5
+THRESHOLD_ONLINE = 0.5 # default threshold used during the training phase
+THRESHOLD_PHYSICAL = 0.5 # default threshold used during the training phase
 COLS_TO_DROP_ONLINE = ["id",'card_swipe_ratio',"mcc_risk","merchant_risk","card_type","date","merchant_state_risk","location_type", "prev_fraud_count_30days", "mcc", "client_id", "errors", "customer_id", "card_id", "merchant_id", "merchant_city", "use_chip","is_online",  "merchant_state", "zip", "target", "has_bad_cvv"]
 CATEGORIC_COLS_ONLINE = [] # 'mcc_category', "errors"
 NUMERIC_COLS_ONLINE = ['amount', 'hour', 'day_of_week', 'month',  "online_history_ratio", "time_since_last_trx", "trx_count_1h", "trx_amount_1h"]
