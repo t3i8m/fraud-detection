@@ -24,9 +24,15 @@ def extract_features(df):
     df["is_new_mcc"] = (~df.duplicated(subset=["client_id", "mcc"])).astype(int)
     df["is_new_merchant"] = (~df.duplicated(subset=["client_id", "merchant_id"])).astype(int)
 
-    grouped_amount = df.groupby("client_id")["amount"]
-    exp_mean = grouped_amount.transform(lambda x: x.shift(1).expanding().mean().fillna(0))
-    exp_std = grouped_amount.transform(lambda x: x.shift(1).expanding().std().fillna(0))
+    if "target" in df.columns:
+        is_fraud = (df["target"].astype(str).str.lower().str.strip() == "yes")
+        legit_amount = df["amount"].where(~is_fraud)
+    else:
+        legit_amount = df["amount"]
+
+    grouped_legit_amount = legit_amount.groupby(df["client_id"])
+    exp_mean = grouped_legit_amount.transform(lambda x: x.shift(1).expanding().mean().fillna(0))
+    exp_std = grouped_legit_amount.transform(lambda x: x.shift(1).expanding().std().fillna(0))
     df["user_amount_z_score"] = (df["amount"] - exp_mean) / exp_std.replace(0, 1.0)
 
     df = df.set_index("date")

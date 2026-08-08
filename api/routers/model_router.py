@@ -1,5 +1,5 @@
 import logging
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, BackgroundTasks, Request
 import pandas as pd
 from api.config import DECISION_THRESHOLD, HIGH_RISK_THRESHOLD, LOW_RISK_THRESHOLD
 from api.db.repository import get_realtime_features, update_redis_cache, save_transaction, insert_transaction
@@ -19,8 +19,15 @@ def get_risk_level(probability):
     return RISK_LEVEL.HIGH
 
 
+async def _persist_prediction(transaction: Transaction, trx_predicted: TransactionPredicted, db_connection, redis_connection):
+    # runs after the response is already on its way to the client 
+    await insert_transaction(transaction, db_connection)
+    await save_transaction(trx_predicted, db_connection)
+    await update_redis_cache(transaction, redis_connection)
+
+
 @router.post("/predict")
-async def predict_fraud(request: Request,transaction:Transaction):
+async def predict_fraud(request: Request, transaction: Transaction, background_tasks: BackgroundTasks):
     model = request.app.state.model
     redis_connection = request.app.state.redis_connection
     db_connection = request.app.state.db_connection
@@ -45,17 +52,12 @@ async def predict_fraud(request: Request,transaction:Transaction):
     trx_predicted = TransactionPredicted(**transaction.model_dump(),fraud_probability=prediction,risk_level=risk_level,binary_prediction=binary_prediction,**realtime_features,)
     logger.info(f"Transaction {transaction.id} classified as {binary_prediction} (probability={prediction:.4f}, risk_level={risk_level.value})")
 
-    # save transaction as usual, then its prediction
-    await insert_transaction(transaction, db_connection)
-    await save_transaction(trx_predicted, db_connection)
-
-    update_status = await update_redis_cache(transaction, redis_connection)
+    background_tasks.add_task(_persist_prediction, transaction, trx_predicted, db_connection, redis_connection)
 
     return {
         'result': prediction,
         'risk_level': risk_level.value,
         'binary_prediction': binary_prediction,
-        'cache_updated': update_status,
         **realtime_features,
     }
 

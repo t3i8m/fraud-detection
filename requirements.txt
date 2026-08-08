@@ -1,14 +1,15 @@
 
 pandas==2.3.3
-numpy==1.26.4
+numpy==2.4.6
 scipy==1.17.1
 scikit-learn==1.9.0
 joblib==1.5.3
-lightgbm==4.7.0
+lightgbm==4.6.0
 xgboost==3.2.0
 catboost==1.2.10
 mlflow==3.14.0
 cloudpickle==3.1.2
+shap==0.51.0
 matplotlib==3.11.1
 seaborn==0.13.2
 plotly==6.9.0

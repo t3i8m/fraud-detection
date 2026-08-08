@@ -9,7 +9,18 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - run: pytest tests/ -v
+
   build-and-push:
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -58,7 +69,24 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            set -e
             cd /root/fraud-detection
+
+            PREVIOUS_VERSION=$(grep '^APP_VERSION=' .env | cut -d= -f2)
             sed -i "s/^APP_VERSION=.*/APP_VERSION=${{ github.ref_name }}/" .env
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d
+
+            for i in $(seq 1 10); do
+              if curl -sf http://localhost:8050/metrics > /dev/null; then
+                echo "Health check passed on ${{ github.ref_name }}"
+                exit 0
+              fi
+              sleep 3
+            done
+
+            echo "Health check failed on ${{ github.ref_name }}, rolling back to $PREVIOUS_VERSION"
+            sed -i "s/^APP_VERSION=.*/APP_VERSION=$PREVIOUS_VERSION/" .env
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d
+            exit 1

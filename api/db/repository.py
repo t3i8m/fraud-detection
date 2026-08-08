@@ -86,7 +86,6 @@ async def get_realtime_features(trx:Transaction, redis_connection:Redis):
     is_new_merchant = 0 if await redis_connection.sismember(seen_merchant_key, trx.merchant_id) else 1
     is_new_mcc = 0 if await redis_connection.sismember(seen_mcc_key, trx.mcc) else 1
 
-    await redis_connection.zremrangebyscore(window_key, "-inf", window_start)
     window_members = await redis_connection.zrangebyscore(window_key, window_start, "+inf")
     window_parts = [member.split(":") for member in window_members]
     window_amounts = [float(parts[1]) for parts in window_parts]
@@ -144,6 +143,7 @@ async def update_redis_cache(trx:Transaction, redis_connection:Redis):
 
         error_flags = get_error_flags(trx)
         window_member = f"{trx.id}:{trx.amount}:{error_flags['has_bad_pin']}:{error_flags['has_bad_cvv']}:{error_flags['has_insufficient_balance']}:{error_flags['has_technical_glitch']}"
+        await redis_connection.zremrangebyscore(window_key, "-inf", trx.date.timestamp() - WINDOW_1H_SECONDS)
         await redis_connection.zadd(window_key, {window_member: trx.date.timestamp()})
         await redis_connection.expire(window_key, WINDOW_1H_SECONDS)
         

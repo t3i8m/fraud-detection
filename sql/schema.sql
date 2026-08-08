@@ -17,7 +17,7 @@ CREATE TABLE users (
 
 CREATE TABLE cards (
     id BIGINT PRIMARY KEY,
-    client_id BIGINT NOT NULL,
+    client_id BIGINT NOT NULL REFERENCES users(id),
     card_brand TEXT,
     card_type TEXT,
     card_number TEXT,
@@ -36,8 +36,8 @@ CREATE TYPE review_status AS ENUM ('approved', 'pending', 'reject');
 CREATE TABLE transactions (
     id BIGINT PRIMARY KEY,
     date TIMESTAMP NOT NULL,
-    client_id BIGINT NOT NULL,
-    card_id BIGINT NOT NULL,
+    client_id BIGINT NOT NULL REFERENCES users(id),
+    card_id BIGINT NOT NULL REFERENCES cards(id),
     amount NUMERIC(12,2) NOT NULL,
     use_chip TEXT NOT NULL,
     merchant_id BIGINT NOT NULL,

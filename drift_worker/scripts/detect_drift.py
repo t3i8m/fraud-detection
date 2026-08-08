@@ -1,4 +1,3 @@
-import asyncio
 import json
 import logging
 import os
@@ -12,7 +11,6 @@ from evidently.metric_preset import DataDriftPreset
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-RUN_INTERVAL_HOURS = float(os.environ.get("DRIFT_RUN_INTERVAL_HOURS", 1))
 REFERENCE_WINDOW_HOURS = float(os.environ.get("DRIFT_REFERENCE_WINDOW_HOURS", 2))
 CURRENT_WINDOW_HOURS = float(os.environ.get("DRIFT_CURRENT_WINDOW_HOURS", 1))
 MIN_ROWS = int(os.environ.get("DRIFT_MIN_ROWS", 30))
@@ -98,11 +96,6 @@ def run_drift_check():
         conn.close()
 
 
-async def run_forever():
-    while True:
-        run_drift_check()
-        await asyncio.sleep(RUN_INTERVAL_HOURS * 60 * 60)
-
 
 if __name__ == "__main__":
-    asyncio.run(run_forever())
+    run_drift_check()

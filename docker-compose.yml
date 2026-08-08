@@ -56,6 +56,7 @@ services:
     command: 
       redis-server --requirepass ${REDIS_PASSWORD}
 
+
   sync_worker:
     build:
       context: .
@@ -72,7 +73,6 @@ services:
     depends_on:
       - postgres
       - redis
-    restart: unless-stopped
 
   simulator:
     build:
@@ -115,7 +115,6 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
     depends_on:
       - postgres
-    restart: unless-stopped
 
   prometheus:
     image: prom/prometheus:v2.55.1

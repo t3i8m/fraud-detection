@@ -1,14 +1,17 @@
 import mlflow
 import matplotlib.pyplot as plt
 import seaborn as sns
+import shap
 import os
 import numpy as np
 import pandas as pd
 from config import CATEGORIC_COLS_OFFLINE, CATEGORIC_COLS_ONLINE, COLS_TO_DROP_OFFLINE, COLS_TO_DROP_ONLINE, NUMERIC_COLS_OFFLINE, NUMERIC_COLS_ONLINE
-from src.pipeline import build_pipeline, compute_feature_weights
+from src.pipeline import build_pipeline, compute_feature_weights, RANDOM_STATE
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.metrics import average_precision_score, roc_auc_score, precision_score,precision_recall_curve, recall_score, f1_score
 from tqdm import tqdm
+
+SHAP_SAMPLE_SIZE = 2000
 
 
 
@@ -204,10 +207,52 @@ def get_feature_importances(pipeline, X, y, model_type, fit_params={}):
         plt.close()
         
         mlflow.log_artifact(plot_path)
-        
+
         if os.path.exists(plot_path):
             os.remove(plot_path)
+
+    log_shap_summary_plot(pipeline, X, model_type=model_type)
     return
+
+
+def log_shap_summary_plot(pipeline, X, model_type, sample_size=SHAP_SAMPLE_SIZE):
+    preprocessor = pipeline[:-1]
+    model_instance = pipeline.named_steps["classifier"]
+
+    X_sample = X.sample(min(sample_size, len(X)), random_state=RANDOM_STATE)
+    X_transformed = preprocessor.transform(X_sample)
+    feature_names = preprocessor.get_feature_names_out()
+
+    if hasattr(X_transformed, "toarray"):
+        X_transformed = X_transformed.toarray()
+    X_transformed = pd.DataFrame(np.asarray(X_transformed, dtype=np.float64), columns=feature_names)
+
+    if model_type == "lr":
+        explainer = shap.LinearExplainer(model_instance, X_transformed)
+    else:
+        explainer = shap.TreeExplainer(model_instance)
+
+    shap_values = explainer.shap_values(X_transformed)
+    if isinstance(shap_values, list):
+        shap_values = shap_values[1]
+    elif isinstance(shap_values, np.ndarray) and shap_values.ndim == 3:
+        shap_values = shap_values[:, :, 1]
+
+    plt.figure(figsize=(10, 8))
+    shap.summary_plot(shap_values, X_transformed, show=False)
+    plt.title(f"SHAP Summary Plot ({model_type})")
+    plt.tight_layout()
+
+    plot_path = "shap_summary.png"
+    plt.savefig(plot_path, bbox_inches="tight")
+    plt.close()
+
+    mlflow.log_artifact(plot_path)
+
+    if os.path.exists(plot_path):
+        os.remove(plot_path)
+    return
+
 
 def log_pr_curve(y_true, y_prob, pr_auc_score):
 

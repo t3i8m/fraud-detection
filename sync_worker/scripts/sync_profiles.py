@@ -2,14 +2,12 @@ import asyncio
 import logging
 import asyncpg
 import os
-from datetime import datetime, timedelta, timezone
 import redis.asyncio as aioredis
 
 logger = logging.getLogger(__name__)
 redis_connection = aioredis.Redis(host=os.environ["REDIS_HOST"], port=os.environ["REDIS_PORT"], password=os.environ["REDIS_PASSWORD"], decode_responses=True)
 
 EXPIRATION = 60 * 60 * 24 * 90 # we set max 90 days to store clients data
-SYNC_HOUR_UTC = 3
 
 async def get_postgre_pool():
     return await asyncpg.create_pool(host=os.environ["POSTGRES_HOST"],port=os.environ["POSTGRES_PORT"],user=os.environ["POSTGRES_USER"],password=os.environ["POSTGRES_PASSWORD"],database=os.environ["POSTGRES_DB"])
@@ -24,13 +22,9 @@ async def get_users_data_batch(postgre_pool):
         count(t.amount) AS trx_count,
         sum(t.amount) AS amount_sum,
         sum(t.amount * t.amount) AS amount_sumsq
-    FROM transactions t
-    LEFT JOIN predictions p ON p.id = t.id, latest_ts
+    FROM transactions t, latest_ts
     WHERE t.use_chip = 'Online Transaction'
-        AND (
-            (t.status = 'approved' AND (p.id IS NULL OR p.binary_prediction = 'approved'))
-            OR (t.status = 'pending' AND p.binary_prediction = 'approved' AND t.target = 'No')
-        )
+        AND t.target = 'No'
         AND t.date <= latest_ts.ts - interval '14 days'
     GROUP BY t.client_id
     """
@@ -43,12 +37,13 @@ async def get_users_data_batch(postgre_pool):
 
 
 async def get_cards_activity_batch(postgre_pool):
-    sql_query = """SELECT
+    sql_query = """WITH latest_ts AS (SELECT max(date) AS ts FROM transactions)
+    SELECT
         card_id,
         max(date) AS last_trx_ts,
-        count(*) FILTER (WHERE use_chip = 'Online Transaction') AS online_count,
-        count(*) AS total_count
-    FROM transactions
+        count(*) FILTER (WHERE use_chip = 'Online Transaction' AND target = 'No' AND date <= latest_ts.ts - interval '14 days') AS online_count,
+        count(*) FILTER (WHERE target = 'No' AND date <= latest_ts.ts - interval '14 days') AS total_count
+    FROM transactions, latest_ts
     GROUP BY card_id
     """
     try:
@@ -95,19 +90,5 @@ async def sync_behaviour():
         await postgre_connection.close()
 
 
-def seconds_until_next_run(hour=SYNC_HOUR_UTC):
-    now = datetime.now(timezone.utc)
-    next_run = now.replace(hour=hour, minute=0, second=0, microsecond=0)
-    if next_run <= now:
-        next_run += timedelta(days=1)
-    return (next_run - now).total_seconds()
-
-
-async def run_forever():
-    while True:
-        await sync_behaviour()
-        await asyncio.sleep(seconds_until_next_run())
-
-
 if __name__=="__main__":
-    asyncio.run(run_forever())
+    asyncio.run(sync_behaviour())
