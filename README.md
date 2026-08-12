@@ -1,11 +1,9 @@
 
-
-
-
 # fraud-detection
 
 https://github.com/user-attachments/assets/8033110d-5db8-489c-9d63-bf2204f669e4
 
+📝 Write-up: [From notebook to realtime classification: my first MLOps case study in fraud detection](https://medium.com/@timurs.jercaks/from-notebook-to-realtime-classification-my-first-mlops-case-study-in-fraud-detection-4cdcfefcbf83)
 
 Real-time credit card fraud detection: an XGBoost model trained offline on historical
 transactions, served behind a FastAPI endpoint that scores live traffic using features
