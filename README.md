@@ -1,4 +1,11 @@
+
+
+
+
 # fraud-detection
+
+https://github.com/user-attachments/assets/8033110d-5db8-489c-9d63-bf2204f669e4
+
 
 Real-time credit card fraud detection: an XGBoost model trained offline on historical
 transactions, served behind a FastAPI endpoint that scores live traffic using features
